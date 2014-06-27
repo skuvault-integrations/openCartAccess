@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OpenCartAccess.Services
 {
@@ -10,9 +6,14 @@ namespace OpenCartAccess.Services
 	{
 		public static readonly string EmptyParams = string.Empty;
 
-		public static string CreateOrdersParams( DateTime dateFrom, DateTime dateTo )
+		public static string CreateNewOrdersParams( DateTime dateFrom, DateTime dateTo )
 		{
-			return null;
+			return string.Format( "added_from/{0}/added_to/{1}", dateFrom, dateTo );
+		}
+
+		public static string CreateModifiedOrdersParams( DateTime dateFrom, DateTime dateTo )
+		{
+			return string.Format( "modified_from/{0}/modified_to/{1}", dateFrom, dateTo );
 		}
 	}
 }

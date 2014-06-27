@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using FluentAssertions;
 using LINQtoCSV;
 using NUnit.Framework;
@@ -35,5 +36,13 @@ namespace OpenCartAccessTests.Orders
 			orders.Count().Should().BeGreaterThan( 0 );
 		}
 
+		[ Test ]
+		public async Task GetOrdersAsync()
+		{
+			var service = this.OpenCartFactory.CreateOrdersService( this.Config );
+			var orders = await service.GetOrdersAsync( DateTime.UtcNow.AddDays( -400 ), DateTime.UtcNow );
+
+			orders.Count().Should().BeGreaterThan( 0 );
+		}
 	}
 }
