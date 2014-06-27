@@ -19,6 +19,17 @@ namespace OpenCartAccess.Misc
 			SystemUtil.Sleep( TimeSpan.FromSeconds( 0.6 ) );
 		} );
 
+		public static ActionPolicyAsync OpenCartGetPolicyAsync
+		{
+			get { return _openCartGetPolicyAsync; }
+		}
+
+		private static readonly ActionPolicyAsync _openCartGetPolicyAsync = ActionPolicyAsync.Handle< Exception >().RetryAsync( 50, async ( ex, i ) =>
+		{
+			typeof( ActionPolicies ).Log().Trace( ex, "Retrying OpenCart API get call for the {0} time", i );
+			await Task.Delay( TimeSpan.FromSeconds( 0.6 ) );
+		} );
+
 		public static ActionPolicy OpenCartSubmitPolicy
 		{
 			get { return _openCartSumbitPolicy; }
@@ -30,14 +41,14 @@ namespace OpenCartAccess.Misc
 			SystemUtil.Sleep( TimeSpan.FromSeconds( 0.6 ) );
 		} );
 
-		public static ActionPolicyAsync QueryAsync
+		public static ActionPolicyAsync OpenCartSubmitPolicyAsync
 		{
-			get { return _queryAsync; }
+			get { return _openCartSumbitPolicyAsync; }
 		}
 
-		private static readonly ActionPolicyAsync _queryAsync = ActionPolicyAsync.Handle< Exception >().RetryAsync( 50, async ( ex, i ) =>
+		private static readonly ActionPolicyAsync _openCartSumbitPolicyAsync = ActionPolicyAsync.Handle< Exception >().RetryAsync( 50, async ( ex, i ) =>
 		{
-			typeof( ActionPolicies ).Log().Trace( ex, "Retrying OpenCart API get call for the {0} time", i );
+			typeof( ActionPolicies ).Log().Trace( ex, "Retrying OpenCart API submit call for the {0} time", i );
 			await Task.Delay( TimeSpan.FromSeconds( 0.6 ) );
 		} );
 	}

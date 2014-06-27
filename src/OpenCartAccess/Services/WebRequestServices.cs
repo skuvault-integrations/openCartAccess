@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using System.Threading.Tasks;
 using Netco.Logging;
 using OpenCartAccess.Models.Configuration;
 using ServiceStack;
@@ -26,6 +27,16 @@ namespace OpenCartAccess.Services
 			return result;
 		}
 
+		public async Task< T > GetResponseAsync< T >( OpenCartCommand command, string commandParams )
+		{
+			T result;
+			var request = this.CreateGetServiceGetRequest( string.Concat( this._config.ShopUrl, command.Command, commandParams ) );
+			using( var response = await request.GetResponseAsync() )
+				result = ParseResponse< T >( response );
+
+			return result;
+		}
+
 		public void PutData( OpenCartCommand command, string endpoint, string jsonContent )
 		{
 			var request = this.CreateServicePutRequest( command, endpoint, jsonContent );
@@ -33,6 +44,14 @@ namespace OpenCartAccess.Services
 				this.LogUpdateInfo( endpoint, response.StatusCode, jsonContent );
 		}
 
+		public async Task PutDataAsync( OpenCartCommand command, string endpoint, string jsonContent )
+		{
+			var request = this.CreateServicePutRequest( command, endpoint, jsonContent );
+			using( var response = await request.GetResponseAsync() )
+				this.LogUpdateInfo( endpoint, ( ( HttpWebResponse )response ).StatusCode, jsonContent );
+		}
+
+		#region WebRequest configuration
 		private HttpWebRequest CreateGetServiceGetRequest( string url )
 		{
 			var uri = new Uri( url );
@@ -58,6 +77,7 @@ namespace OpenCartAccess.Services
 
 			return request;
 		}
+		#endregion
 
 		#region Misc
 		private void CreateRequestHeaders( HttpWebRequest request )

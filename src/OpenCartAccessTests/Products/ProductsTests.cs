@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using FluentAssertions;
 using LINQtoCSV;
 using NUnit.Framework;
@@ -37,12 +38,30 @@ namespace OpenCartAccessTests.Products
 		}
 
 		[ Test ]
+		public async Task GetProductsASync()
+		{
+			var service = this.OpenCartFactory.CreateProductsService( this.Config );
+			var products = await service.GetProductsAsync();
+
+			products.Count().Should().BeGreaterThan( 0 );
+		}
+
+		[ Test ]
 		public void ProductOptionsQuantityUpdated()
 		{
 			var service = this.OpenCartFactory.CreateProductsService( this.Config );
 
 			var productToUpdate = new OpenCartProduct { Id = 47, Quantity = 10 };
 			service.UpdateProducts( new List< OpenCartProduct > { productToUpdate } );
+		}
+
+		[ Test ]
+		public async Task ProductOptionsQuantityUpdatedAsync()
+		{
+			var service = this.OpenCartFactory.CreateProductsService( this.Config );
+
+			var productToUpdate = new OpenCartProduct { Id = 47, Quantity = 10 };
+			await service.UpdateProductsAsync( new List< OpenCartProduct > { productToUpdate } );
 		}
 	}
 }

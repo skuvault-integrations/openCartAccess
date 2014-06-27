@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
-using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using CuttingEdge.Conditions;
+using OpenCartAccess.Misc;
 using OpenCartAccess.Models.Configuration;
 using OpenCartAccess.Models.Product;
 using OpenCartAccess.Services;
@@ -23,38 +24,47 @@ namespace OpenCartAccess
 		#region Get
 		public IEnumerable< OpenCartProduct > GetProducts()
 		{
-			var productsResponse = this._webRequestServices.GetResponse< OpenCartProductsResponse >( OpenCartCommand.GetProducts, ParamsBuilder.EmptyParams );
+			var productsResponse = new OpenCartProductsResponse();
+			ActionPolicies.OpenCartGetPolicy.Do( () =>
+			{
+				productsResponse = this._webRequestServices.GetResponse< OpenCartProductsResponse >( OpenCartCommand.GetProducts, ParamsBuilder.EmptyParams );
+			} );
 			return productsResponse.Products;
 		}
 
-		public Task< IEnumerable< OpenCartProduct > > GetProductsAsync()
+		public async Task< IEnumerable< OpenCartProduct > > GetProductsAsync()
 		{
-			return null;
+			var productsResponse = new OpenCartProductsResponse();
+			await ActionPolicies.OpenCartGetPolicyAsync.Do( async () =>
+			{
+				productsResponse = await this._webRequestServices.GetResponseAsync< OpenCartProductsResponse >( OpenCartCommand.GetProducts, ParamsBuilder.EmptyParams );
+			} );
+			return productsResponse.Products;
 		}
 		#endregion
 
 		#region Update
 		public void UpdateProducts( IEnumerable< OpenCartProduct > products )
 		{
-			foreach( var product in products )
-				this.UpdateProductQuantity( product );
+			var jsonContent = this.ConvertProductsToJson( products );
+			ActionPolicies.OpenCartSubmitPolicy.Do( () => this._webRequestServices.PutData(OpenCartCommand.UpdateProducts, ParamsBuilder.EmptyParams, jsonContent) );
 		}
 
 		public async Task UpdateProductsAsync( IEnumerable< OpenCartProduct > products )
 		{
-			foreach( var product in products )
-				await this.UpdateProductQuantityAsync( product );
+			var jsonContent = this.ConvertProductsToJson( products );
+			await ActionPolicies.OpenCartSubmitPolicyAsync.Do( async () =>
+			{
+				await this._webRequestServices.PutDataAsync( OpenCartCommand.UpdateProducts, ParamsBuilder.EmptyParams, jsonContent );
+			} );
 		}
+		#endregion
 
-		private void UpdateProductQuantity( OpenCartProduct product )
+		#region Misc
+		private string ConvertProductsToJson( IEnumerable< OpenCartProduct > products )
 		{
-			var jsonContent = new { model = "Product 21", quantity = product.Quantity }.ToJson();
-			this._webRequestServices.PutData( OpenCartCommand.UpdateProduct, product.Id.ToString( CultureInfo.InvariantCulture ), jsonContent );
-		}
-
-		private async Task UpdateProductQuantityAsync( OpenCartProduct product )
-		{
-
+			var productsToUpdate = products.Select( p => new { product_id = p.Id, quantity = p.Quantity } ).ToArray();
+			return productsToUpdate.ToJson();
 		}
 		#endregion
 	}
