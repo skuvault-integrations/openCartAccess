@@ -45,7 +45,7 @@ namespace OpenCartAccess.Services
 			using( var response = ( HttpWebResponse )request.GetResponse() )
 			{
 				var result = ParseResponse< OpenCartProductsResponse >( response );
-				this.LogUpdateInfo( endpoint, response.StatusCode, result.Status, result.Error );
+				this.LogUpdateInfo( endpoint, response.StatusCode,jsonContent, result.Status, result.Error );
 			}
 		}
 
@@ -55,7 +55,7 @@ namespace OpenCartAccess.Services
 			using( var response = ( HttpWebResponse )await request.GetResponseAsync() )
 			{
 				var result = ParseResponse< OpenCartProductsResponse >( response );
-				this.LogUpdateInfo( endpoint, response.StatusCode, result.Status, result.Error );
+				this.LogUpdateInfo(endpoint, response.StatusCode, jsonContent, result.Status, result.Error);
 			}
 		}
 
@@ -112,9 +112,9 @@ namespace OpenCartAccess.Services
 			return result;
 		}
 
-		private void LogUpdateInfo( string url, HttpStatusCode statusCode, string requestStatus, string requestResult )
+		private void LogUpdateInfo( string url, HttpStatusCode statusCode, string jsonContent, string requestStatus, string requestResult )
 		{
-			this.Log().Trace( "[opencart]\tPUT/POST call for the url '{0}' has been completed with code '{1}'.\n{2}-{3}", url, statusCode, requestStatus, requestResult );
+			this.Log().Trace( "[opencart]\tPUT/POST call for the url '{0}' has been completed with code '{1}'.\n{2}-{3}\n{4}", url, statusCode, jsonContent, requestStatus, requestResult );
 		}
 		#endregion
 	}
