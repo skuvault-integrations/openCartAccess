@@ -60,6 +60,7 @@
     <Compile Include="IOpenCartProductsService.cs" />
     <Compile Include="Misc\ActionPolicies.cs" />
     <Compile Include="Models\Order\OpenCartOrder.cs" />
+    <Compile Include="Models\Order\OpenCartOrderProduct.cs" />
     <Compile Include="Models\Order\OpenCartOrdersResponse.cs" />
     <Compile Include="Models\Product\OpenCartProduct.cs" />
     <Compile Include="Models\Product\OpenCartProductsResponse.cs" />
