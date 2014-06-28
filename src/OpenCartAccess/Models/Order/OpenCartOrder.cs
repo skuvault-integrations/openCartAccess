@@ -20,7 +20,7 @@ namespace OpenCartAccess.Models.Order
 		public int StatusId { get; set; }
 
 		[ DataMember( Name = "total" ) ]
-		public decimal OrderTotal { get; set; }
+		public string OrderTotal { get; set; }
 
 		[ DataMember( Name = "email" ) ]
 		public string Email { get; set; }

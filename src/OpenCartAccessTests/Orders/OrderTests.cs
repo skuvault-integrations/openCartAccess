@@ -44,5 +44,14 @@ namespace OpenCartAccessTests.Orders
 
 			orders.Count().Should().BeGreaterThan( 0 );
 		}
+
+		[ Test ]
+		public void GetOrdersByDateTimeRange()
+		{
+			var service = this.OpenCartFactory.CreateOrdersService( this.Config );
+			var orders = service.GetOrders( DateTime.UtcNow.AddMinutes( -3 ), DateTime.UtcNow );
+
+			orders.Count().Should().BeGreaterThan( 0 );
+		}
 	}
 }

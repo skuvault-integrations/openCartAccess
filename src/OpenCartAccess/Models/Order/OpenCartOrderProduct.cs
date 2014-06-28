@@ -12,6 +12,6 @@ namespace OpenCartAccess.Models.Order
 		public int Quantity { get; set; }
 
 		[ DataMember( Name = "price" ) ]
-		public decimal Price { get; set; }
+		public string Price { get; set; }
 	}
 }
