@@ -38,14 +38,13 @@ namespace OpenCartAccess.Services
 			return result;
 		}
 
-		//TODO: add/fix response logging
 		public void PutData( OpenCartCommand command, string endpoint, string jsonContent )
 		{
 			var request = this.CreateServicePutRequest( command, endpoint, jsonContent );
 			using( var response = ( HttpWebResponse )request.GetResponse() )
 			{
 				var result = ParseResponse< OpenCartProductsResponse >( response );
-				this.LogUpdateInfo( endpoint, response.StatusCode,jsonContent, result.Status, result.Error );
+				this.LogUpdateInfo( endpoint, response.StatusCode, jsonContent, result.Status, result.Error );
 			}
 		}
 
@@ -55,7 +54,7 @@ namespace OpenCartAccess.Services
 			using( var response = ( HttpWebResponse )await request.GetResponseAsync() )
 			{
 				var result = ParseResponse< OpenCartProductsResponse >( response );
-				this.LogUpdateInfo(endpoint, response.StatusCode, jsonContent, result.Status, result.Error);
+				this.LogUpdateInfo( endpoint, response.StatusCode, jsonContent, result.Status, result.Error );
 			}
 		}
 
