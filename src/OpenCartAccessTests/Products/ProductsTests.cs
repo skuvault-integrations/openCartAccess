@@ -51,7 +51,7 @@ namespace OpenCartAccessTests.Products
 		{
 			var service = this.OpenCartFactory.CreateProductsService( this.Config );
 
-			var productToUpdate = new OpenCartProduct { Id = 47, Quantity = 10 };
+			var productToUpdate = new OpenCartProduct { Id = 47, Quantity = 12 };
 			service.UpdateProducts( new List< OpenCartProduct > { productToUpdate } );
 		}
 

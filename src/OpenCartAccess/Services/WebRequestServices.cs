@@ -4,6 +4,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Netco.Logging;
 using OpenCartAccess.Models.Configuration;
+using OpenCartAccess.Models.Product;
 using ServiceStack;
 
 namespace OpenCartAccess.Services
@@ -37,18 +38,25 @@ namespace OpenCartAccess.Services
 			return result;
 		}
 
+		//TODO: add/fix response logging
 		public void PutData( OpenCartCommand command, string endpoint, string jsonContent )
 		{
 			var request = this.CreateServicePutRequest( command, endpoint, jsonContent );
 			using( var response = ( HttpWebResponse )request.GetResponse() )
-				this.LogUpdateInfo( endpoint, response.StatusCode, jsonContent );
+			{
+				var result = ParseResponse< OpenCartProductsResponse >( response );
+				this.LogUpdateInfo( endpoint, response.StatusCode, result.Status, result.Error );
+			}
 		}
 
 		public async Task PutDataAsync( OpenCartCommand command, string endpoint, string jsonContent )
 		{
 			var request = this.CreateServicePutRequest( command, endpoint, jsonContent );
-			using( var response = await request.GetResponseAsync() )
-				this.LogUpdateInfo( endpoint, ( ( HttpWebResponse )response ).StatusCode, jsonContent );
+			using( var response = ( HttpWebResponse )await request.GetResponseAsync() )
+			{
+				var result = ParseResponse< OpenCartProductsResponse >( response );
+				this.LogUpdateInfo( endpoint, response.StatusCode, result.Status, result.Error );
+			}
 		}
 
 		#region WebRequest configuration
@@ -104,9 +112,9 @@ namespace OpenCartAccess.Services
 			return result;
 		}
 
-		private void LogUpdateInfo( string url, HttpStatusCode statusCode, string jsonContent )
+		private void LogUpdateInfo( string url, HttpStatusCode statusCode, string requestStatus, string requestResult )
 		{
-			this.Log().Trace( "[opencart]\tPUT/POST call for the url '{0}' has been completed with code '{1}'.\n{2}", url, statusCode, jsonContent );
+			this.Log().Trace( "[opencart]\tPUT/POST call for the url '{0}' has been completed with code '{1}'.\n{2}-{3}", url, statusCode, requestStatus, requestResult );
 		}
 		#endregion
 	}
