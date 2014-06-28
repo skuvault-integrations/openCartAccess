@@ -47,7 +47,7 @@ namespace OpenCartAccess
 		public void UpdateProducts( IEnumerable< OpenCartProduct > products )
 		{
 			var jsonContent = this.ConvertProductsToJson( products );
-			ActionPolicies.OpenCartSubmitPolicy.Do( () => this._webRequestServices.PutData(OpenCartCommand.UpdateProducts, ParamsBuilder.EmptyParams, jsonContent) );
+			ActionPolicies.OpenCartSubmitPolicy.Do( () => this._webRequestServices.PutData( OpenCartCommand.UpdateProducts, ParamsBuilder.EmptyParams, jsonContent ) );
 		}
 
 		public async Task UpdateProductsAsync( IEnumerable< OpenCartProduct > products )

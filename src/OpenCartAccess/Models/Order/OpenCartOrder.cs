@@ -17,7 +17,7 @@ namespace OpenCartAccess.Models.Order
 		public DateTime UpdatedDate { get; set; }
 
 		[ DataMember( Name = "order_status_id" ) ]
-		public string StatusId { get; set; }
+		public int StatusId { get; set; }
 
 		[ DataMember( Name = "total" ) ]
 		public decimal OrderTotal { get; set; }
@@ -64,20 +64,20 @@ namespace OpenCartAccess.Models.Order
 
 	public enum OpenCartOrderStatusEnum
 	{
-		MissingOrder,
-		Canceled,
-		CanceledReversal,
-		Chargeback,
-		Complete,
-		Denied,
-		Expired,
-		Failed,
-		Pending,
-		Processed,
-		Processing,
-		Refunded,
-		Reversed,
-		Shipped,
-		Voided
+		MissingOrders,
+		Canceled = 7,
+		CanceledReversal = 9,
+		Chargeback = 13,
+		Complete = 5,
+		Denied = 8,
+		Expired = 14,
+		Failed = 10,
+		Pending = 1,
+		Processed = 15,
+		Processing = 2,
+		Refunded = 11,
+		Reversed = 12,
+		Shipped = 3,
+		Voided = 16
 	}
 }
