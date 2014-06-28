@@ -60,6 +60,51 @@ namespace OpenCartAccess.Models.Order
 
 		[ DataMember( Name = "products" ) ]
 		public IList< OpenCartOrderProduct > Products { get; set; }
+
+		#region Equality members
+		public bool Equals( OpenCartOrder other )
+		{
+			if( ReferenceEquals( null, other ) )
+				return false;
+			if( ReferenceEquals( this, other ) )
+				return true;
+			return this.OrderId.Equals( other.OrderId );
+		}
+
+		public override bool Equals( object obj )
+		{
+			if( ReferenceEquals( null, obj ) )
+				return false;
+			if( ReferenceEquals( this, obj ) )
+				return true;
+			if( obj.GetType() != this.GetType() )
+				return false;
+			return this.Equals( ( OpenCartOrder )obj );
+		}
+
+		public override int GetHashCode()
+		{
+			unchecked
+			{
+				var result = this.OrderId.GetHashCode();
+				result = ( result * 397 ) ^ this.CreatedDate.GetHashCode();
+				result = ( result * 397 ) ^ this.UpdatedDate.GetHashCode();
+				result = ( result * 397 ) ^ this.ShippingCountry.GetHashCode();
+
+				return result;
+			}
+		}
+
+		public static bool operator ==( OpenCartOrder left, OpenCartOrder right )
+		{
+			return Equals( left, right );
+		}
+
+		public static bool operator !=( OpenCartOrder left, OpenCartOrder right )
+		{
+			return !Equals( left, right );
+		}
+		#endregion
 	}
 
 	public enum OpenCartOrderStatusEnum

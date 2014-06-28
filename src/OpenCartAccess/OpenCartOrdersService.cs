@@ -31,7 +31,7 @@ namespace OpenCartAccess
 			{
 				var newOrdersResponse = this._webRequestServices.GetResponse< OpenCartOrdersResponse >( OpenCartCommand.GetOrders, newOrdersEndpoint );
 				var modifiedOrdersResponse = this._webRequestServices.GetResponse< OpenCartOrdersResponse >( OpenCartCommand.GetOrders, modifiedOrdersEndpoint );
-				orders = newOrdersResponse.Orders.Concat( modifiedOrdersResponse.Orders ).ToList();
+				orders = newOrdersResponse.Orders.Union( modifiedOrdersResponse.Orders ).ToList();
 			} );
 
 			return orders;
@@ -47,7 +47,7 @@ namespace OpenCartAccess
 			{
 				var newOrdersResponse = await this._webRequestServices.GetResponseAsync< OpenCartOrdersResponse >( OpenCartCommand.GetOrders, newOrdersEndpoint );
 				var modifiedOrdersResponse = await this._webRequestServices.GetResponseAsync< OpenCartOrdersResponse >( OpenCartCommand.GetOrders, modifiedOrdersEndpoint );
-				orders = newOrdersResponse.Orders.Concat( modifiedOrdersResponse.Orders ).ToList();
+				orders = newOrdersResponse.Orders.Union( modifiedOrdersResponse.Orders ).ToList();
 			} );
 
 			return orders;
