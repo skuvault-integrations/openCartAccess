@@ -51,8 +51,11 @@ namespace OpenCartAccessTests.Products
 		{
 			var service = this.OpenCartFactory.CreateProductsService( this.Config );
 
-			var productToUpdate = new OpenCartProduct { Id = 47, Quantity = 12 };
-			service.UpdateProducts( new List< OpenCartProduct > { productToUpdate } );
+			service.UpdateProducts( new List< OpenCartProduct >
+			{
+				new OpenCartProduct { Id = 47, Quantity = 44 },
+				new OpenCartProduct { Id = 28, Quantity = 33 }
+			} );
 		}
 
 		[ Test ]
@@ -60,8 +63,11 @@ namespace OpenCartAccessTests.Products
 		{
 			var service = this.OpenCartFactory.CreateProductsService( this.Config );
 
-			var productToUpdate = new OpenCartProduct { Id = 47, Quantity = 10 };
-			await service.UpdateProductsAsync( new List< OpenCartProduct > { productToUpdate } );
+			await service.UpdateProductsAsync( new List< OpenCartProduct >
+			{
+				new OpenCartProduct { Id = 47, Quantity = 44 },
+				new OpenCartProduct { Id = 28, Quantity = 33 }
+			} );
 		}
 	}
 }

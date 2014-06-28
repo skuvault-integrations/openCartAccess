@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using CuttingEdge.Conditions;
@@ -63,7 +64,7 @@ namespace OpenCartAccess
 		#region Misc
 		private string ConvertProductsToJson( IEnumerable< OpenCartProduct > products )
 		{
-			var productsToUpdate = products.Select( p => new { product_id = p.Id, quantity = p.Quantity } ).ToArray();
+			var productsToUpdate = products.Select( p => new { product_id = p.Id.ToString( CultureInfo.InvariantCulture ), quantity = p.Quantity.ToString( CultureInfo.InvariantCulture ) } ).ToArray();
 			return productsToUpdate.ToJson();
 		}
 		#endregion
