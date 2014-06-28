@@ -5,13 +5,16 @@ using System.Runtime.Serialization;
 namespace OpenCartAccess.Models.Order
 {
 	[ DataContract ]
-	public class OpenCartOrder
+	public sealed class OpenCartOrder
 	{
 		[ DataMember( Name = "order_id" ) ]
 		public int OrderId { get; set; }
 
 		[ DataMember( Name = "date_added" ) ]
 		public DateTime CreatedDate { get; set; }
+
+		[ DataMember( Name = "date_modified" ) ]
+		public DateTime UpdatedDate { get; set; }
 
 		[ DataMember( Name = "order_status_id" ) ]
 		public string StatusId { get; set; }
