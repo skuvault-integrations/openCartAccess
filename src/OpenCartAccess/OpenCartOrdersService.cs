@@ -29,9 +29,9 @@ namespace OpenCartAccess
 
 			ActionPolicies.OpenCartGetPolicy.Do( () =>
 			{
-				var newOrdersResponse = this._webRequestServices.GetResponse< OpenCartOrdersResponse >( OpenCartCommand.GetOrders, newOrdersEndpoint );
-				var modifiedOrdersResponse = this._webRequestServices.GetResponse< OpenCartOrdersResponse >( OpenCartCommand.GetOrders, modifiedOrdersEndpoint );
-				orders = newOrdersResponse.Orders.Union( modifiedOrdersResponse.Orders ).ToList();
+				var newOrdersResponse = this._webRequestServices.GetResponse< OpenCartOrdersResponse >( OpenCartCommand.GetOrders, newOrdersEndpoint ).Orders ?? new List< OpenCartOrder >();
+				var modifiedOrdersResponse = this._webRequestServices.GetResponse< OpenCartOrdersResponse >( OpenCartCommand.GetOrders, modifiedOrdersEndpoint ).Orders ?? new List< OpenCartOrder >();
+				orders = newOrdersResponse.Union( modifiedOrdersResponse ).ToList();
 			} );
 
 			return orders;
@@ -45,9 +45,9 @@ namespace OpenCartAccess
 
 			await ActionPolicies.OpenCartGetPolicyAsync.Do( async () =>
 			{
-				var newOrdersResponse = await this._webRequestServices.GetResponseAsync< OpenCartOrdersResponse >( OpenCartCommand.GetOrders, newOrdersEndpoint );
-				var modifiedOrdersResponse = await this._webRequestServices.GetResponseAsync< OpenCartOrdersResponse >( OpenCartCommand.GetOrders, modifiedOrdersEndpoint );
-				orders = newOrdersResponse.Orders.Union( modifiedOrdersResponse.Orders ).ToList();
+				var newOrdersResponse = ( await this._webRequestServices.GetResponseAsync< OpenCartOrdersResponse >( OpenCartCommand.GetOrders, newOrdersEndpoint ) ).Orders ?? new List< OpenCartOrder >();
+				var modifiedOrdersResponse = ( await this._webRequestServices.GetResponseAsync< OpenCartOrdersResponse >( OpenCartCommand.GetOrders, modifiedOrdersEndpoint ) ).Orders ?? new List< OpenCartOrder >();
+				orders = newOrdersResponse.Union( modifiedOrdersResponse ).ToList();
 			} );
 
 			return orders;

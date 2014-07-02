@@ -20,21 +20,33 @@ namespace OpenCartAccess.Services
 
 		public T GetResponse< T >( OpenCartCommand command, string commandParams )
 		{
-			T result;
+			var result = default( T );
 			var request = this.CreateGetServiceGetRequest( string.Concat( this._config.ShopUrl, command.Command, commandParams ) );
-			using( var response = request.GetResponse() )
-				result = ParseResponse< T >( response );
-
+			try
+			{
+				using( var response = request.GetResponse() )
+					result = ParseResponse< T >( response );
+			}
+			catch( WebException e )
+			{
+				this.LogRequestException( request.RequestUri.AbsoluteUri, e.Status, e.Message );
+			}
 			return result;
 		}
 
 		public async Task< T > GetResponseAsync< T >( OpenCartCommand command, string commandParams )
 		{
-			T result;
+			var result = default( T );
 			var request = this.CreateGetServiceGetRequest( string.Concat( this._config.ShopUrl, command.Command, commandParams ) );
-			using( var response = await request.GetResponseAsync() )
-				result = ParseResponse< T >( response );
-
+			try
+			{
+				using( var response = await request.GetResponseAsync() )
+					result = ParseResponse< T >( response );
+			}
+			catch( WebException e )
+			{
+				this.LogRequestException( request.RequestUri.AbsoluteUri, e.Status, e.Message );
+			}
 			return result;
 		}
 
@@ -114,6 +126,11 @@ namespace OpenCartAccess.Services
 		private void LogUpdateInfo( string url, HttpStatusCode statusCode, string jsonContent, string requestStatus, string requestResult )
 		{
 			this.Log().Trace( "[opencart]\tPUT/POST call for the url '{0}' has been completed with code '{1}'.\n{2}-{3}\n{4}", url, statusCode, jsonContent, requestStatus, requestResult );
+		}
+
+		private void LogRequestException( string url, WebExceptionStatus statusCode, string message )
+		{
+			this.Log().Trace( "[opencart] WebException. Url: '{0}'\nStatus code: '{1}'\nMessage: {2}", url, statusCode, message );
 		}
 		#endregion
 	}

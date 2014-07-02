@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -6,6 +7,7 @@ using LINQtoCSV;
 using NUnit.Framework;
 using OpenCartAccess;
 using OpenCartAccess.Models.Configuration;
+using OpenCartAccess.Models.Order;
 
 namespace OpenCartAccessTests.Orders
 {
