@@ -54,6 +54,9 @@
     <Compile Include="..\Global\GlobalAssemblyInfo.cs">
       <Link>Properties\GlobalAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="IOpenCartChecksumService.cs" />
+    <Compile Include="Models\Checksum\OpenCartChecksum.cs" />
+    <Compile Include="Models\Checksum\OpenCartChecksumsResponse.cs" />
     <Compile Include="Models\Configuration\OpenCartCommand.cs" />
     <Compile Include="Models\Configuration\OpenCartConfig.cs" />
     <Compile Include="IOpenCartOrdersService.cs" />
@@ -64,6 +67,7 @@
     <Compile Include="Models\Order\OpenCartOrdersResponse.cs" />
     <Compile Include="Models\Product\OpenCartProduct.cs" />
     <Compile Include="Models\Product\OpenCartProductsResponse.cs" />
+    <Compile Include="OpenCartChecksumService.cs" />
     <Compile Include="OpenCartFactory.cs" />
     <Compile Include="OpenCartOrdersService.cs" />
     <Compile Include="OpenCartProductsService.cs" />

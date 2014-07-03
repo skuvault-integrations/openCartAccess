@@ -6,6 +6,8 @@ namespace OpenCartAccess
 	{
 		IOpenCartOrdersService CreateOrdersService( OpenCartConfig config );
 		IOpenCartProductsService CreateProductsService( OpenCartConfig config );
+
+		IOpenCartChecksumService CreateChecksumService( OpenCartConfig config );
 	}
 
 	public class OpenCartFactory : IOpenCartFactory
@@ -18,6 +20,11 @@ namespace OpenCartAccess
 		public IOpenCartProductsService CreateProductsService( OpenCartConfig config )
 		{
 			return new OpenCartProductsService( config );
+		}
+
+		public IOpenCartChecksumService CreateChecksumService( OpenCartConfig config )
+		{
+			return new OpenCartChecksumService( config );
 		}
 	}
 }
