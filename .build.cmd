@@ -5,7 +5,7 @@ set LOGDIR=%~dp0log\
 set LOGFILE=%LOGDIR%%1.log
 if not exist %LOGDIR% md %LOGDIR%
 
-tools\Invoke-Build\ib -File:.build.ps1 -Summary -Verbose
+CALL tools\Invoke-Build\ib -File:.build.ps1 -Summary -Verbose
 
 PAUSE
 GOTO End1
