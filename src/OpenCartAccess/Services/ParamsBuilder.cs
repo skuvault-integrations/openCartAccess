@@ -13,7 +13,7 @@ namespace OpenCartAccess.Services
 
 		public static string CreateModifiedOrdersParams( DateTime dateFrom, DateTime dateTo )
 		{
-			return string.Format( "modified_from/{0}/modified_to/{1}", dateFrom, dateTo );
+			return string.Format( "modified_from/{0}/modified_to/{1}", dateFrom.ToString( "yyyy-MM-dd HH:mm:ss" ), dateTo.ToString( "yyyy-MM-dd HH:mm:ss" ) );
 		}
 	}
 }

@@ -24,6 +24,11 @@ namespace OpenCartAccess
 		public IEnumerable< OpenCartOrder > GetOrders( DateTime dateFrom, DateTime dateTo )
 		{
 			var orders = new List< OpenCartOrder >();
+
+			var dateTimeOffset = this.GetDateTimeOffset();
+			dateFrom = this.ApplyDateTimeOffset( dateFrom, dateTimeOffset );
+			dateTo = this.ApplyDateTimeOffset( dateTo, dateTimeOffset );
+
 			var newOrdersEndpoint = ParamsBuilder.CreateNewOrdersParams( dateFrom, dateTo );
 			var modifiedOrdersEndpoint = ParamsBuilder.CreateModifiedOrdersParams( dateFrom, dateTo );
 
@@ -40,6 +45,11 @@ namespace OpenCartAccess
 		public async Task< IEnumerable< OpenCartOrder > > GetOrdersAsync( DateTime dateFrom, DateTime dateTo )
 		{
 			var orders = new List< OpenCartOrder >();
+
+			var dateTimeOffset = await this.GetDateTimeOffsetAsync();
+			dateFrom = this.ApplyDateTimeOffset( dateFrom, dateTimeOffset );
+			dateTo = this.ApplyDateTimeOffset( dateTo, dateTimeOffset );
+
 			var newOrdersEndpoint = ParamsBuilder.CreateNewOrdersParams( dateFrom, dateTo );
 			var modifiedOrdersEndpoint = ParamsBuilder.CreateModifiedOrdersParams( dateFrom, dateTo );
 
@@ -51,6 +61,33 @@ namespace OpenCartAccess
 			} );
 
 			return orders;
+		}
+
+		public OpenCartDateTimeUtcOffset GetDateTimeOffset()
+		{
+			OpenCartDateTimeUtcOffset offset = null;
+			ActionPolicies.OpenCartGetPolicy.Do( () =>
+			{
+				var response = this._webRequestServices.GetResponse< OpenCartDateTimeUtcOffsetResponse >( OpenCartCommand.GetUtcOffset, ParamsBuilder.EmptyParams ) ?? new OpenCartDateTimeUtcOffsetResponse();
+				offset = response.Offset;
+			} );
+			return offset;
+		}
+
+		public async Task< OpenCartDateTimeUtcOffset > GetDateTimeOffsetAsync()
+		{
+			OpenCartDateTimeUtcOffset offset = null;
+			await ActionPolicies.OpenCartGetPolicyAsync.Do( async () =>
+			{
+				var response = ( await this._webRequestServices.GetResponseAsync< OpenCartDateTimeUtcOffsetResponse >( OpenCartCommand.GetUtcOffset, ParamsBuilder.EmptyParams ) ) ?? new OpenCartDateTimeUtcOffsetResponse();
+				offset = response.Offset;
+			} );
+			return offset;
+		}
+
+		private DateTime ApplyDateTimeOffset( DateTime baseDateTime, OpenCartDateTimeUtcOffset offset )
+		{
+			return baseDateTime.AddSeconds( offset.Offset );
 		}
 	}
 }

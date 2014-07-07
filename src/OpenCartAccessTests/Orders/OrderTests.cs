@@ -31,7 +31,7 @@ namespace OpenCartAccessTests.Orders
 		public void GetOrders()
 		{
 			var service = this.OpenCartFactory.CreateOrdersService( this.Config );
-			var orders = service.GetOrders( DateTime.UtcNow.AddDays( -14 ), DateTime.UtcNow );
+			var orders = service.GetOrders( DateTime.UtcNow.AddDays( -56 ), DateTime.UtcNow );
 
 			orders.Count().Should().BeGreaterThan( 0 );
 		}
@@ -49,9 +49,36 @@ namespace OpenCartAccessTests.Orders
 		public void GetOrdersByDateTimeRange()
 		{
 			var service = this.OpenCartFactory.CreateOrdersService( this.Config );
-			var orders = service.GetOrders( DateTime.UtcNow.AddMinutes( -3 ), DateTime.UtcNow );
+			var orders = service.GetOrders( DateTime.UtcNow.AddMinutes( -5 ), DateTime.UtcNow );
 
 			orders.Count().Should().BeGreaterThan( 0 );
+		}
+
+		[ Test ]
+		public async Task GetOrdersByDateTimeRangeAsync()
+		{
+			var service = this.OpenCartFactory.CreateOrdersService( this.Config );
+			var orders = await service.GetOrdersAsync( DateTime.UtcNow.AddMinutes( -5 ), DateTime.UtcNow );
+
+			orders.Count().Should().BeGreaterThan( 0 );
+		}
+
+		[ Test ]
+		public void GetDateTimeOffset()
+		{
+			var service = this.OpenCartFactory.CreateOrdersService( this.Config );
+			var offset = service.GetDateTimeOffset();
+
+			offset.Should().NotBeNull();
+		}
+
+		[ Test ]
+		public async Task GetDateTimeOffsetAsync()
+		{
+			var service = this.OpenCartFactory.CreateOrdersService( this.Config );
+			var offset = await service.GetDateTimeOffsetAsync();
+
+			offset.Should().NotBeNull();
 		}
 	}
 }

@@ -7,6 +7,7 @@
 		public static readonly OpenCartCommand GetOrders = new OpenCartCommand( "/api/rest/orders/details/" );
 		public static readonly OpenCartCommand UpdateProducts = new OpenCartCommand( "/api/rest/bulk_products" );
 		public static readonly OpenCartCommand GetChecksums = new OpenCartCommand( "/api/rest/checksums" );
+		public static readonly OpenCartCommand GetUtcOffset = new OpenCartCommand( "/api/rest/utc_offset" );
 
 		private OpenCartCommand( string command )
 		{
