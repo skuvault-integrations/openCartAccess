@@ -8,12 +8,12 @@ namespace OpenCartAccess.Services
 
 		public static string CreateNewOrdersParams( DateTime dateFrom, DateTime dateTo )
 		{
-			return string.Format( "added_from/{0}/added_to/{1}", dateFrom, dateTo );
+			return string.Format( "added_from/{0}/added_to/{1}", dateFrom.ToString( "s" ), dateTo.ToString( "s" ) );
 		}
 
 		public static string CreateModifiedOrdersParams( DateTime dateFrom, DateTime dateTo )
 		{
-			return string.Format( "modified_from/{0}/modified_to/{1}", dateFrom.ToString( "yyyy-MM-dd HH:mm:ss" ), dateTo.ToString( "yyyy-MM-dd HH:mm:ss" ) );
+			return string.Format( "modified_from/{0}/modified_to/{1}", dateFrom.ToString( "s" ), dateTo.ToString( "s" ) );
 		}
 	}
 }
