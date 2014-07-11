@@ -28,7 +28,7 @@ namespace OpenCartAccess
 			var productsResponse = new OpenCartProductsResponse();
 			ActionPolicies.OpenCartGetPolicy.Do( () =>
 			{
-				productsResponse = this._webRequestServices.GetResponse< OpenCartProductsResponse >( OpenCartCommand.GetProducts, ParamsBuilder.EmptyParams );
+				productsResponse = this._webRequestServices.GetResponse< OpenCartProductsResponse >( OpenCartCommand.GetProducts, ParamsBuilder.EmptyParams ) ?? new OpenCartProductsResponse();
 			} );
 			return productsResponse.Products;
 		}
@@ -38,7 +38,7 @@ namespace OpenCartAccess
 			var productsResponse = new OpenCartProductsResponse();
 			await ActionPolicies.OpenCartGetPolicyAsync.Do( async () =>
 			{
-				productsResponse = await this._webRequestServices.GetResponseAsync< OpenCartProductsResponse >( OpenCartCommand.GetProducts, ParamsBuilder.EmptyParams );
+				productsResponse = await this._webRequestServices.GetResponseAsync< OpenCartProductsResponse >( OpenCartCommand.GetProducts, ParamsBuilder.EmptyParams ) ?? new OpenCartProductsResponse();
 			} );
 			return productsResponse.Products;
 		}
