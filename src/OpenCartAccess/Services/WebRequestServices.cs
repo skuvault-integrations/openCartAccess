@@ -2,7 +2,7 @@
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
-using Netco.Logging;
+using OpenCartAccess.Misc;
 using OpenCartAccess.Models.Configuration;
 using OpenCartAccess.Models.Product;
 using ServiceStack;
@@ -114,7 +114,7 @@ namespace OpenCartAccess.Services
 				var reader = new StreamReader( stream );
 				var jsonResponse = reader.ReadToEnd();
 
-				this.Log().Trace( "[opencart]\tResponse\t{0} - {1}", response.ResponseUri, jsonResponse );
+				OpenCartLogger.Log.Trace( "[opencart]\tResponse\t{0} - {1}", response.ResponseUri, jsonResponse );
 
 				if( !string.IsNullOrEmpty( jsonResponse ) )
 					result = jsonResponse.FromJson< T >();
@@ -125,12 +125,12 @@ namespace OpenCartAccess.Services
 
 		private void LogUpdateInfo( string url, HttpStatusCode statusCode, string jsonContent, string requestStatus, string requestResult )
 		{
-			this.Log().Trace( "[opencart]\tPUT/POST call for the url '{0}' has been completed with code '{1}'.\n{2}-{3}\n{4}", url, statusCode, jsonContent, requestStatus, requestResult );
+			OpenCartLogger.Log.Trace( "[opencart]\tPUT/POST call for the url '{0}' has been completed with code '{1}'.\n{2}-{3}\n{4}", url, statusCode, jsonContent, requestStatus, requestResult );
 		}
 
 		private void LogRequestException( string url, WebExceptionStatus statusCode, string message )
 		{
-			this.Log().Trace( "[opencart] WebException. Url: '{0}'\nStatus code: '{1}'\nMessage: {2}", url, statusCode, message );
+			OpenCartLogger.Log.Trace( "[opencart] WebException. Url: '{0}'\nStatus code: '{1}'\nMessage: {2}", url, statusCode, message );
 		}
 		#endregion
 	}

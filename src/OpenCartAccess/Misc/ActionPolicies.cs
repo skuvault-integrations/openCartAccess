@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Netco.ActionPolicyServices;
-using Netco.Logging;
 using Netco.Utils;
 
 namespace OpenCartAccess.Misc
@@ -15,7 +14,7 @@ namespace OpenCartAccess.Misc
 
 		private static readonly ActionPolicy _openCartGetPolicy = ActionPolicy.Handle< Exception >().Retry( 50, ( ex, i ) =>
 		{
-			typeof( ActionPolicies ).Log().Trace( ex, "Retrying OpenCart API get call for the {0} time", i );
+			OpenCartLogger.Log.Trace( ex, "Retrying OpenCart API get call for the {0} time", i );
 			SystemUtil.Sleep( TimeSpan.FromSeconds( 0.6 ) );
 		} );
 
@@ -26,7 +25,7 @@ namespace OpenCartAccess.Misc
 
 		private static readonly ActionPolicyAsync _openCartGetPolicyAsync = ActionPolicyAsync.Handle< Exception >().RetryAsync( 50, async ( ex, i ) =>
 		{
-			typeof( ActionPolicies ).Log().Trace( ex, "Retrying OpenCart API get call for the {0} time", i );
+			OpenCartLogger.Log.Trace( ex, "Retrying OpenCart API get call for the {0} time", i );
 			await Task.Delay( TimeSpan.FromSeconds( 0.6 ) );
 		} );
 
@@ -37,7 +36,7 @@ namespace OpenCartAccess.Misc
 
 		private static readonly ActionPolicy _openCartSumbitPolicy = ActionPolicy.Handle< Exception >().Retry( 50, ( ex, i ) =>
 		{
-			typeof( ActionPolicies ).Log().Trace( ex, "Retrying OpenCart API submit call for the {0} time", i );
+			OpenCartLogger.Log.Trace( ex, "Retrying OpenCart API submit call for the {0} time", i );
 			SystemUtil.Sleep( TimeSpan.FromSeconds( 0.6 ) );
 		} );
 
@@ -48,7 +47,7 @@ namespace OpenCartAccess.Misc
 
 		private static readonly ActionPolicyAsync _openCartSumbitPolicyAsync = ActionPolicyAsync.Handle< Exception >().RetryAsync( 50, async ( ex, i ) =>
 		{
-			typeof( ActionPolicies ).Log().Trace( ex, "Retrying OpenCart API submit call for the {0} time", i );
+			OpenCartLogger.Log.Trace( ex, "Retrying OpenCart API submit call for the {0} time", i );
 			await Task.Delay( TimeSpan.FromSeconds( 0.6 ) );
 		} );
 	}
