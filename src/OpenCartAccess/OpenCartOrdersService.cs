@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CuttingEdge.Conditions;
+using Netco.Extensions;
 using OpenCartAccess.Misc;
 using OpenCartAccess.Models.Configuration;
 using OpenCartAccess.Models.Order;
@@ -10,7 +11,7 @@ using OpenCartAccess.Services;
 
 namespace OpenCartAccess
 {
-	public class OpenCartOrdersService : IOpenCartOrdersService
+	public class OpenCartOrdersService: IOpenCartOrdersService
 	{
 		private readonly WebRequestServices _webRequestServices;
 
@@ -29,16 +30,26 @@ namespace OpenCartAccess
 			dateFrom = this.ApplyDateTimeOffset( dateFrom, dateTimeOffset );
 			dateTo = this.ApplyDateTimeOffset( dateTo, dateTimeOffset );
 
-			var newOrdersEndpoint = ParamsBuilder.CreateNewOrdersParams( dateFrom, dateTo );
-			var modifiedOrdersEndpoint = ParamsBuilder.CreateModifiedOrdersParams( dateFrom, dateTo );
-
-			ActionPolicies.OpenCartGetPolicy.Do( () =>
+			var currentStartDate = dateFrom;
+			while( currentStartDate < dateTo )
 			{
-				var newOrdersResponse = this._webRequestServices.GetResponse< OpenCartOrdersResponse >( OpenCartCommand.GetOrders, newOrdersEndpoint ) ?? new OpenCartOrdersResponse();
-				var modifiedOrdersResponse = this._webRequestServices.GetResponse< OpenCartOrdersResponse >( OpenCartCommand.GetOrders, modifiedOrdersEndpoint ) ?? new OpenCartOrdersResponse();
-				orders = newOrdersResponse.Orders.Union( modifiedOrdersResponse.Orders ).ToList();
-			} );
+				var currentEndDate = currentStartDate.AddDays( 1 );
+				if( currentEndDate > dateTo )
+					currentEndDate = dateTo;
 
+				var newOrdersEndpoint = ParamsBuilder.CreateNewOrdersParams( currentStartDate, currentEndDate );
+				var modifiedOrdersEndpoint = ParamsBuilder.CreateModifiedOrdersParams( currentStartDate, currentEndDate );
+
+				ActionPolicies.OpenCartGetPolicy.Do( () =>
+				{
+					var newOrdersResponse = this._webRequestServices.GetResponse< OpenCartOrdersResponse >( OpenCartCommand.GetOrders, newOrdersEndpoint ) ?? new OpenCartOrdersResponse();
+					var modifiedOrdersResponse = this._webRequestServices.GetResponse< OpenCartOrdersResponse >( OpenCartCommand.GetOrders, modifiedOrdersEndpoint ) ?? new OpenCartOrdersResponse();
+					orders.AddRange( newOrdersResponse.Orders );
+					orders.AddRange( modifiedOrdersResponse.Orders );
+				} );
+
+				currentStartDate = currentEndDate;
+			}
 			return orders;
 		}
 
@@ -50,16 +61,30 @@ namespace OpenCartAccess
 			dateFrom = this.ApplyDateTimeOffset( dateFrom, dateTimeOffset );
 			dateTo = this.ApplyDateTimeOffset( dateTo, dateTimeOffset );
 
-			var newOrdersEndpoint = ParamsBuilder.CreateNewOrdersParams( dateFrom, dateTo );
-			var modifiedOrdersEndpoint = ParamsBuilder.CreateModifiedOrdersParams( dateFrom, dateTo );
-
-			await ActionPolicies.OpenCartGetPolicyAsync.Do( async () =>
+			var currentStartDate = dateFrom;
+			while( currentStartDate < dateTo )
 			{
-				var newOrdersResponse = ( await this._webRequestServices.GetResponseAsync< OpenCartOrdersResponse >( OpenCartCommand.GetOrders, newOrdersEndpoint ) ) ?? new OpenCartOrdersResponse();
-				var modifiedOrdersResponse = ( await this._webRequestServices.GetResponseAsync< OpenCartOrdersResponse >( OpenCartCommand.GetOrders, modifiedOrdersEndpoint ) ) ?? new OpenCartOrdersResponse();
-				orders = newOrdersResponse.Orders.Union( modifiedOrdersResponse.Orders ).ToList();
-			} );
+				var currentEndDate = currentStartDate.AddDays( 1 );
+				if( currentEndDate > dateTo )
+					currentEndDate = dateTo;
 
+				var newOrdersEndpoint = ParamsBuilder.CreateNewOrdersParams( currentStartDate, currentEndDate );
+				var modifiedOrdersEndpoint = ParamsBuilder.CreateModifiedOrdersParams( currentStartDate, currentEndDate );
+
+				await ActionPolicies.OpenCartGetPolicyAsync.Do( async () =>
+				{
+					var newOrdersResponse = this._webRequestServices.GetResponseAsync< OpenCartOrdersResponse >( OpenCartCommand.GetOrders, newOrdersEndpoint );
+					var modifiedOrdersResponse = this._webRequestServices.GetResponseAsync< OpenCartOrdersResponse >( OpenCartCommand.GetOrders, modifiedOrdersEndpoint );
+					await TaskHelper.WhenAll( newOrdersResponse, modifiedOrdersResponse );
+
+					if( newOrdersResponse.Result != null )
+						orders.AddRange( newOrdersResponse.Result.Orders );
+					if( modifiedOrdersResponse.Result != null )
+						orders.AddRange( modifiedOrdersResponse.Result.Orders );
+				} );
+
+				currentStartDate = currentEndDate;
+			}
 			return orders;
 		}
 
