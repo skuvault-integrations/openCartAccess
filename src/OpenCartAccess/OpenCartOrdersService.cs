@@ -24,7 +24,8 @@ namespace OpenCartAccess
 
 		public IEnumerable< OpenCartOrder > GetOrders( DateTime dateFrom, DateTime dateTo )
 		{
-			var orders = new List< OpenCartOrder >();
+			var newOrders = new List< OpenCartOrder >();
+			var modifiedOrders = new List< OpenCartOrder >();
 
 			var dateTimeOffset = this.GetDateTimeOffset();
 			dateFrom = this.ApplyDateTimeOffset( dateFrom, dateTimeOffset );
@@ -42,20 +43,28 @@ namespace OpenCartAccess
 
 				ActionPolicies.OpenCartGetPolicy.Do( () =>
 				{
-					var newOrdersResponse = this._webRequestServices.GetResponse< OpenCartOrdersResponse >( OpenCartCommand.GetOrders, newOrdersEndpoint ) ?? new OpenCartOrdersResponse();
+					// TODO: Remove code for getting new orders if all are ok. New orders should be included into modified collection
+					var newOrdersResponse = new OpenCartOrdersResponse();//this._webRequestServices.GetResponse< OpenCartOrdersResponse >( OpenCartCommand.GetOrders, newOrdersEndpoint ) ?? new OpenCartOrdersResponse();
 					var modifiedOrdersResponse = this._webRequestServices.GetResponse< OpenCartOrdersResponse >( OpenCartCommand.GetOrders, modifiedOrdersEndpoint ) ?? new OpenCartOrdersResponse();
-					orders.AddRange( newOrdersResponse.Orders );
-					orders.AddRange( modifiedOrdersResponse.Orders );
+					newOrders.AddRange( newOrdersResponse.Orders );
+					modifiedOrders.AddRange( modifiedOrdersResponse.Orders );
 				} );
 
 				currentStartDate = currentEndDate;
 			}
-			return orders;
+
+			foreach( var newOrder in newOrders )
+			{
+				if( modifiedOrders.All( x => x.OrderId != newOrder.OrderId ) )
+					modifiedOrders.Add( newOrder );
+			}
+			return modifiedOrders;
 		}
 
 		public async Task< IEnumerable< OpenCartOrder > > GetOrdersAsync( DateTime dateFrom, DateTime dateTo )
 		{
-			var orders = new List< OpenCartOrder >();
+			var newOrders = new List< OpenCartOrder >();
+			var modifiedOrders = new List< OpenCartOrder >();
 
 			var dateTimeOffset = await this.GetDateTimeOffsetAsync();
 			dateFrom = this.ApplyDateTimeOffset( dateFrom, dateTimeOffset );
@@ -73,19 +82,26 @@ namespace OpenCartAccess
 
 				await ActionPolicies.OpenCartGetPolicyAsync.Do( async () =>
 				{
-					var newOrdersResponse = this._webRequestServices.GetResponseAsync< OpenCartOrdersResponse >( OpenCartCommand.GetOrders, newOrdersEndpoint );
+					// TODO: Remove code for getting new orders if all are ok. New orders should be included into modified collection
+					var newOrdersResponse = Task.FromResult( new OpenCartOrdersResponse() );// this._webRequestServices.GetResponseAsync< OpenCartOrdersResponse >( OpenCartCommand.GetOrders, newOrdersEndpoint );
 					var modifiedOrdersResponse = this._webRequestServices.GetResponseAsync< OpenCartOrdersResponse >( OpenCartCommand.GetOrders, modifiedOrdersEndpoint );
 					await TaskHelper.WhenAll( newOrdersResponse, modifiedOrdersResponse );
 
 					if( newOrdersResponse.Result != null )
-						orders.AddRange( newOrdersResponse.Result.Orders );
+						newOrders.AddRange( newOrdersResponse.Result.Orders );
 					if( modifiedOrdersResponse.Result != null )
-						orders.AddRange( modifiedOrdersResponse.Result.Orders );
+						modifiedOrders.AddRange( modifiedOrdersResponse.Result.Orders );
 				} );
 
 				currentStartDate = currentEndDate;
 			}
-			return orders;
+
+			foreach( var newOrder in newOrders )
+			{
+				if( modifiedOrders.All( x => x.OrderId != newOrder.OrderId ) )
+					modifiedOrders.Add( newOrder );
+			}
+			return modifiedOrders;
 		}
 
 		public OpenCartDateTimeUtcOffset GetDateTimeOffset()

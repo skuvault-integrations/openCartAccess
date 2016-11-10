@@ -31,8 +31,8 @@ namespace OpenCartAccessTests.Orders
 		public void GetOrders()
 		{
 			var service = this.OpenCartFactory.CreateOrdersService( this.Config );
-			//var orders = service.GetOrders( DateTime.UtcNow.AddDays( -56 ), DateTime.UtcNow );
-			var orders = service.GetOrders( new DateTime( 2014, 6, 24, 10, 7, 35 ), new DateTime( 2014, 7, 8, 3, 4, 57 ) );
+			var orders = service.GetOrders( DateTime.UtcNow.AddDays( -14 ), DateTime.UtcNow );
+			//var orders = service.GetOrders( new DateTime( 2014, 6, 24, 10, 7, 35 ), new DateTime( 2014, 7, 8, 3, 4, 57 ) );
 
 			orders.Count().Should().BeGreaterThan( 0 );
 		}
@@ -41,7 +41,8 @@ namespace OpenCartAccessTests.Orders
 		public async Task GetOrdersAsync()
 		{
 			var service = this.OpenCartFactory.CreateOrdersService( this.Config );
-			var orders = await service.GetOrdersAsync(new DateTime(2014, 6, 24, 10, 7, 35), new DateTime(2014, 7, 8, 3, 4, 57));
+			var orders = await service.GetOrdersAsync( DateTime.UtcNow.AddDays( -14 ), DateTime.UtcNow );
+			//var orders = await service.GetOrdersAsync(new DateTime(2014, 6, 24, 10, 7, 35), new DateTime(2014, 7, 8, 3, 4, 57));
 
 			orders.Count().Should().BeGreaterThan( 0 );
 		}
