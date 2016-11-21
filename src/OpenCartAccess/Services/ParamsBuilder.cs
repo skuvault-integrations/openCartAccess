@@ -15,5 +15,10 @@ namespace OpenCartAccess.Services
 		{
 			return string.Format( "modified_from/{0}/modified_to/{1}", dateFrom.ToString( "s" ), dateTo.ToString( "s" ) );
 		}
+
+		public static string CreateProductsByPageParams( int limit, int page )
+		{
+			return string.Format( "limit/{0}/page/{1}", limit, page );
+		}
 	}
 }

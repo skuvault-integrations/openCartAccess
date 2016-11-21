@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using LINQtoCSV;
+using Netco.Logging;
 using NUnit.Framework;
 using OpenCartAccess;
 using OpenCartAccess.Models.Configuration;
@@ -19,6 +20,7 @@ namespace OpenCartAccessTests.Orders
 		public void Init()
 		{
 			const string credentialsFilePath = @"..\..\Files\OpenCartCredentials.csv";
+			NetcoLogger.LoggerFactory = new ConsoleLoggerFactory();
 
 			var cc = new CsvContext();
 			var testConfig = cc.Read< TestConfig >( credentialsFilePath, new CsvFileDescription { FirstLineHasColumnNames = true } ).FirstOrDefault();
@@ -31,7 +33,7 @@ namespace OpenCartAccessTests.Orders
 		public void GetOrders()
 		{
 			var service = this.OpenCartFactory.CreateOrdersService( this.Config );
-			var orders = service.GetOrders( DateTime.UtcNow.AddDays( -14 ), DateTime.UtcNow );
+			var orders = service.GetOrders( DateTime.UtcNow.AddMinutes( -2 ), DateTime.UtcNow );
 			//var orders = service.GetOrders( new DateTime( 2014, 6, 24, 10, 7, 35 ), new DateTime( 2014, 7, 8, 3, 4, 57 ) );
 
 			orders.Count().Should().BeGreaterThan( 0 );

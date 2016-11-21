@@ -1,54 +1,55 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Netco.ActionPolicyServices;
+using Netco.ThrottlerServices;
 using Netco.Utils;
+using OpenCartAccess.Models;
 
 namespace OpenCartAccess.Misc
 {
 	public static class ActionPolicies
 	{
-		public static ActionPolicy OpenCartGetPolicy
+#if DEBUG
+		private const int RetryCount = 1;
+#else
+		private const int RetryCount = 10;
+#endif
+
+		public static ActionPolicy GetPolicy( Mark mark, [ CallerMemberName ] string callerName = "" )
 		{
-			get { return _openCartGetPolicy; }
+			return ActionPolicy.From( ex => !( ex is ThrottlerException ) ).Retry( RetryCount, ( ex, i ) =>
+			{
+				OpenCartLogger.Trace( ex, mark, "Retrying OpenCart API get call for the {0} time. Caller:{1}.", i, callerName );
+				SystemUtil.Sleep( TimeSpan.FromSeconds( 5 + 10 * i ) );
+			} );
 		}
 
-		private static readonly ActionPolicy _openCartGetPolicy = ActionPolicy.Handle< Exception >().Retry( 50, ( ex, i ) =>
+		public static ActionPolicyAsync GetPolicyAsync( Mark mark, [ CallerMemberName ] string callerName = "" )
 		{
-			OpenCartLogger.Log.Trace( ex, "Retrying OpenCart API get call for the {0} time", i );
-			SystemUtil.Sleep( TimeSpan.FromSeconds( 0.6 ) );
-		} );
-
-		public static ActionPolicyAsync OpenCartGetPolicyAsync
-		{
-			get { return _openCartGetPolicyAsync; }
+			return ActionPolicyAsync.From( ex => !( ex is ThrottlerException ) ).RetryAsync( RetryCount, async ( ex, i ) =>
+			{
+				OpenCartLogger.Trace( ex, mark, "Retrying OpenCart API get call for the {0} time. Caller:{1}.", i, callerName );
+				await Task.Delay( TimeSpan.FromSeconds( 5 + 10 * i ) );
+			} );
 		}
 
-		private static readonly ActionPolicyAsync _openCartGetPolicyAsync = ActionPolicyAsync.Handle< Exception >().RetryAsync( 50, async ( ex, i ) =>
+		public static ActionPolicy SubmitPolicy( Mark mark, [ CallerMemberName ] string callerName = "" )
 		{
-			OpenCartLogger.Log.Trace( ex, "Retrying OpenCart API get call for the {0} time", i );
-			await Task.Delay( TimeSpan.FromSeconds( 0.6 ) );
-		} );
-
-		public static ActionPolicy OpenCartSubmitPolicy
-		{
-			get { return _openCartSumbitPolicy; }
+			return ActionPolicy.From( ex => !( ex is ThrottlerException ) ).Retry( RetryCount, ( ex, i ) =>
+			{
+				OpenCartLogger.Trace( ex, mark, "Retrying OpenCart API submit call for the {0} time. Caller:{1}.", i, callerName );
+				SystemUtil.Sleep( TimeSpan.FromSeconds( 5 + 10 * i ) );
+			} );
 		}
 
-		private static readonly ActionPolicy _openCartSumbitPolicy = ActionPolicy.Handle< Exception >().Retry( 50, ( ex, i ) =>
+		public static ActionPolicyAsync SubmitPolicyAsync( Mark mark, [ CallerMemberName ] string callerName = "" )
 		{
-			OpenCartLogger.Log.Trace( ex, "Retrying OpenCart API submit call for the {0} time", i );
-			SystemUtil.Sleep( TimeSpan.FromSeconds( 0.6 ) );
-		} );
-
-		public static ActionPolicyAsync OpenCartSubmitPolicyAsync
-		{
-			get { return _openCartSumbitPolicyAsync; }
+			return ActionPolicyAsync.From( ex => !( ex is ThrottlerException ) ).RetryAsync( RetryCount, async ( ex, i ) =>
+			{
+				OpenCartLogger.Trace( ex, mark, "OpenCart Shopify API submit call for the {0} time. Caller:{1}.", i, callerName );
+				await Task.Delay( TimeSpan.FromSeconds( 5 + 10 * i ) );
+			} );
 		}
-
-		private static readonly ActionPolicyAsync _openCartSumbitPolicyAsync = ActionPolicyAsync.Handle< Exception >().RetryAsync( 50, async ( ex, i ) =>
-		{
-			OpenCartLogger.Log.Trace( ex, "Retrying OpenCart API submit call for the {0} time", i );
-			await Task.Delay( TimeSpan.FromSeconds( 0.6 ) );
-		} );
 	}
 }

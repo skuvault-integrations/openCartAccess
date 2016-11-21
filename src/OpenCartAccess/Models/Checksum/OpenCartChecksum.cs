@@ -6,6 +6,6 @@ namespace OpenCartAccess.Models.Checksum
 	public class OpenCartChecksum
 	{
 		[ DataMember( Name = "checksum" ) ]
-		public string Value { get; set; }
+		public string Value{ get; set; }
 	}
 }

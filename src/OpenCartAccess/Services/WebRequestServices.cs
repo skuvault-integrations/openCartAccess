@@ -2,9 +2,10 @@
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
+using CuttingEdge.Conditions;
 using OpenCartAccess.Misc;
+using OpenCartAccess.Models;
 using OpenCartAccess.Models.Configuration;
-using OpenCartAccess.Models.Product;
 using ServiceStack;
 
 namespace OpenCartAccess.Services
@@ -18,56 +19,68 @@ namespace OpenCartAccess.Services
 			this._config = config;
 		}
 
-		public T GetResponse< T >( OpenCartCommand command, string commandParams )
+		public T GetResponse< T >( OpenCartCommand command, string commandParams, Mark mark ) where T : new()
 		{
-			var result = default( T );
+			Condition.Requires( mark, "mark" ).IsNotNull();
+
 			var request = this.CreateGetServiceGetRequest( string.Concat( this._config.ShopUrl, command.Command, commandParams ) );
-			try
+			this.LogGetRequest( request.RequestUri, mark );
+
+			return this.ParseException( mark, () =>
 			{
+				T result;
 				using( var response = request.GetResponse() )
-					result = ParseResponse< T >( response );
-			}
-			catch( WebException e )
-			{
-				this.LogRequestException( request.RequestUri.AbsoluteUri, e.Status, e.Message );
-			}
-			return result;
+					result = this.ParseResponse< T >( response, mark );
+				return result;
+			} );
 		}
 
-		public async Task< T > GetResponseAsync< T >( OpenCartCommand command, string commandParams )
+		public async Task< T > GetResponseAsync< T >( OpenCartCommand command, string commandParams, Mark mark ) where T : new()
 		{
-			var result = default( T );
+			Condition.Requires( mark, "mark" ).IsNotNull();
+
 			var request = this.CreateGetServiceGetRequest( string.Concat( this._config.ShopUrl, command.Command, commandParams ) );
-			try
+			this.LogGetRequest( request.RequestUri, mark );
+
+			return await this.ParseExceptionAsync( mark, async () =>
 			{
+				T result;
 				using( var response = await request.GetResponseAsync() )
-					result = ParseResponse< T >( response );
-			}
-			catch( WebException e )
-			{
-				this.LogRequestException( request.RequestUri.AbsoluteUri, e.Status, e.Message );
-			}
-			return result;
+					result = this.ParseResponse< T >( response, mark );
+				return result;
+			} );
 		}
 
-		public void PutData( OpenCartCommand command, string endpoint, string jsonContent )
+		public T PutData< T >( OpenCartCommand command, string endpoint, string jsonContent, Mark mark ) where T : new()
 		{
+			Condition.Requires( mark, "mark" ).IsNotNull();
+
 			var request = this.CreateServicePutRequest( command, endpoint, jsonContent );
-			using( var response = ( HttpWebResponse )request.GetResponse() )
+			this.LogUpdateRequest( request.RequestUri, jsonContent, mark );
+
+			return this.ParseException( mark, () =>
 			{
-				var result = ParseResponse< OpenCartProductsResponse >( response );
-				this.LogUpdateInfo( endpoint, response.StatusCode, jsonContent, result.Status, result.Error );
-			}
+				T result;
+				using( var response = request.GetResponse() )
+					result = this.ParseResponse< T >( response, mark );
+				return result;
+			} );
 		}
 
-		public async Task PutDataAsync( OpenCartCommand command, string endpoint, string jsonContent )
+		public async Task< T > PutDataAsync< T >( OpenCartCommand command, string endpoint, string jsonContent, Mark mark ) where T : new()
 		{
+			Condition.Requires( mark, "mark" ).IsNotNull();
+
 			var request = this.CreateServicePutRequest( command, endpoint, jsonContent );
-			using( var response = ( HttpWebResponse )await request.GetResponseAsync() )
+			this.LogUpdateRequest( request.RequestUri, jsonContent, mark );
+
+			return await this.ParseExceptionAsync( mark, async () =>
 			{
-				var result = ParseResponse< OpenCartProductsResponse >( response );
-				this.LogUpdateInfo( endpoint, response.StatusCode, jsonContent, result.Status, result.Error );
-			}
+				T result;
+				using( var response = await request.GetResponseAsync() )
+					result = this.ParseResponse< T >( response, mark );
+				return result;
+			} );
 		}
 
 		#region WebRequest configuration
@@ -96,41 +109,101 @@ namespace OpenCartAccess.Services
 
 			return request;
 		}
-		#endregion
 
-		#region Misc
 		private void CreateRequestHeaders( HttpWebRequest request )
 		{
 			request.Headers.Add( "X-Oc-Merchant-Id", this._config.ApiKey );
 			request.Headers.Add( "X-Oc-Merchant-Language", "en" );
 		}
+		#endregion
 
-		private T ParseResponse< T >( WebResponse response )
+		#region Misc
+		private T ParseResponse< T >( WebResponse response, Mark mark ) where T : new()
 		{
-			var result = default( T );
+			var httpResponse = ( HttpWebResponse )response;
 
 			using( var stream = response.GetResponseStream() )
+			using( var reader = new StreamReader( stream ) )
 			{
-				var reader = new StreamReader( stream );
 				var jsonResponse = reader.ReadToEnd();
 
-				OpenCartLogger.Log.Trace( "[opencart]\tResponse\t{0} - {1}", response.ResponseUri, jsonResponse );
+				this.LogResponse( httpResponse.Method, response.ResponseUri, jsonResponse, mark );
 
-				if( !string.IsNullOrEmpty( jsonResponse ) )
-					result = jsonResponse.FromJson< T >();
+				var result = !string.IsNullOrEmpty( jsonResponse ) ? jsonResponse.FromJson< T >() : new T();
+				return result;
+			}
+		}
+
+		private T ParseException< T >( Mark mark, Func< T > body )
+		{
+			try
+			{
+				return body();
+			}
+			catch( WebException ex )
+			{
+				throw this.HandleException( ex, mark );
+			}
+		}
+
+		private async Task< T > ParseExceptionAsync< T >( Mark mark, Func< Task< T > > body )
+		{
+			try
+			{
+				return await body();
+			}
+			catch( WebException ex )
+			{
+				throw this.HandleException( ex, mark );
+			}
+		}
+
+		private WebException HandleException( WebException ex, Mark mark )
+		{
+			if( ex.Response == null || ex.Status != WebExceptionStatus.ProtocolError ||
+			    ex.Response.ContentType == null /*|| ex.Response.ContentType.Contains( "text/html" )*/ )
+			{
+				this.LogException( ex, mark );
+				return ex;
 			}
 
-			return result;
+			var httpResponse = ( HttpWebResponse )ex.Response;
+
+			using( var stream = httpResponse.GetResponseStream() )
+			using( var reader = new StreamReader( stream ) )
+			{
+				var jsonResponse = reader.ReadToEnd();
+				this.LogException( ex, httpResponse, jsonResponse, mark );
+				return ex;
+			}
+		}
+		#endregion
+
+		#region Logging
+		private void LogGetRequest( Uri requestUri, Mark mark )
+		{
+			OpenCartLogger.Trace( mark, "GET request\tRequest: {0}", requestUri );
 		}
 
-		private void LogUpdateInfo( string url, HttpStatusCode statusCode, string jsonContent, string requestStatus, string requestResult )
+		private void LogUpdateRequest( Uri requestUri, string jsonContent, Mark mark )
 		{
-			OpenCartLogger.Log.Trace( "[opencart]\tPUT/POST call for the url '{0}' has been completed with code '{1}'.\n{2}-{3}\n{4}", url, statusCode, jsonContent, requestStatus, requestResult );
+			OpenCartLogger.Trace( mark, "PUT request\tRequest: {0}Data: {1}", requestUri, jsonContent );
 		}
 
-		private void LogRequestException( string url, WebExceptionStatus statusCode, string message )
+		private void LogResponse( string method, Uri requestUri, string jsonResponse, Mark mark )
 		{
-			OpenCartLogger.Log.Trace( "[opencart] WebException. Url: '{0}'\nStatus code: '{1}'\nMessage: {2}", url, statusCode, message );
+			OpenCartLogger.Trace( mark, "{0} response\tRequest: {1}\tResponse: {2}", method, requestUri, jsonResponse );
+		}
+
+		private void LogException( WebException ex, Mark mark )
+		{
+			OpenCartLogger.Trace( ex, mark, "Failed response\tMessage: {0}\tStatus: {1}", ex.Message, ex.Status );
+		}
+
+		private void LogException( WebException ex, HttpWebResponse response, string jsonResponse, Mark mark )
+		{
+			OpenCartLogger.Trace( ex, mark, "Failed response\tRequest: {0}\tMessage: {1}\tStatus: {2}\tJsonResponse: {3}",
+				response.ResponseUri, ex.Message, response.StatusCode, jsonResponse );
 		}
 		#endregion
 	}

@@ -6,6 +6,11 @@ namespace OpenCartAccess.Models.Configuration
 	internal class OpenCartDateTimeUtcOffsetResponse
 	{
 		[ DataMember( Name = "data" ) ]
-		public OpenCartDateTimeUtcOffset Offset { get; set; }
+		public OpenCartDateTimeUtcOffset Offset{ get; set; }
+
+		public OpenCartDateTimeUtcOffsetResponse()
+		{
+			this.Offset = new OpenCartDateTimeUtcOffset();
+		}
 	}
 }

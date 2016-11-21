@@ -6,9 +6,8 @@ namespace OpenCartAccess.Models.Checksum
 	[ DataContract ]
 	public class OpenCartChecksumsResponse
 	{
-
 		[ DataMember( Name = "data" ) ]
-		public IList< OpenCartChecksum > Checksums { get; set; }
+		public IList< OpenCartChecksum > Checksums{ get; set; }
 
 		public OpenCartChecksumsResponse()
 		{

@@ -5,8 +5,7 @@ namespace OpenCartAccess.Models.Configuration
 	[ DataContract ]
 	public class OpenCartDateTimeUtcOffset
 	{
-
 		[ DataMember( Name = "offset" ) ]
-		public long Offset { get; set; }
+		public long Offset{ get; set; }
 	}
 }

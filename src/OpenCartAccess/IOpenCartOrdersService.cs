@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using OpenCartAccess.Models;
 using OpenCartAccess.Models.Configuration;
 using OpenCartAccess.Models.Order;
 
@@ -8,10 +9,10 @@ namespace OpenCartAccess
 {
 	public interface IOpenCartOrdersService
 	{
-		IEnumerable< OpenCartOrder > GetOrders( DateTime dateFrom, DateTime dateTo );
-		Task< IEnumerable< OpenCartOrder > > GetOrdersAsync( DateTime dateFrom, DateTime dateTo );
+		IEnumerable< OpenCartOrder > GetOrders( DateTime dateFrom, DateTime dateTo, Mark mark = null );
+		Task< IEnumerable< OpenCartOrder > > GetOrdersAsync( DateTime dateFrom, DateTime dateTo, Mark mark = null );
 
-		OpenCartDateTimeUtcOffset GetDateTimeOffset();
-		Task< OpenCartDateTimeUtcOffset > GetDateTimeOffsetAsync();
+		OpenCartDateTimeUtcOffset GetDateTimeOffset( Mark mark = null );
+		Task< OpenCartDateTimeUtcOffset > GetDateTimeOffsetAsync( Mark mark = null );
 	}
 }

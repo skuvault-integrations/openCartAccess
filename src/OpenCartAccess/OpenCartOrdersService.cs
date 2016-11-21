@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using CuttingEdge.Conditions;
-using Netco.Extensions;
 using OpenCartAccess.Misc;
+using OpenCartAccess.Models;
 using OpenCartAccess.Models.Configuration;
 using OpenCartAccess.Models.Order;
 using OpenCartAccess.Services;
@@ -22,9 +21,9 @@ namespace OpenCartAccess
 			this._webRequestServices = new WebRequestServices( config );
 		}
 
-		public IEnumerable< OpenCartOrder > GetOrders( DateTime dateFrom, DateTime dateTo )
+		public IEnumerable< OpenCartOrder > GetOrders( DateTime dateFrom, DateTime dateTo, Mark mark = null )
 		{
-			var newOrders = new List< OpenCartOrder >();
+			mark = mark.CreateNewIfBlank();
 			var modifiedOrders = new List< OpenCartOrder >();
 
 			var dateTimeOffset = this.GetDateTimeOffset();
@@ -34,36 +33,26 @@ namespace OpenCartAccess
 			var currentStartDate = dateFrom;
 			while( currentStartDate < dateTo )
 			{
-				var currentEndDate = currentStartDate.AddDays( 1 );
+				var currentEndDate = currentStartDate.AddHours( 4 );
 				if( currentEndDate > dateTo )
 					currentEndDate = dateTo;
 
-				var newOrdersEndpoint = ParamsBuilder.CreateNewOrdersParams( currentStartDate, currentEndDate );
+				//var newOrdersEndpoint = ParamsBuilder.CreateNewOrdersParams( currentStartDate, currentEndDate );
+
 				var modifiedOrdersEndpoint = ParamsBuilder.CreateModifiedOrdersParams( currentStartDate, currentEndDate );
+				var modifiedOrdersResponse = ActionPolicies.GetPolicy( mark ).Get( () =>
+						this._webRequestServices.GetResponse< OpenCartOrdersResponse >( OpenCartCommand.GetOrders, modifiedOrdersEndpoint, mark ) );
 
-				ActionPolicies.OpenCartGetPolicy.Do( () =>
-				{
-					// TODO: Remove code for getting new orders if all are ok. New orders should be included into modified collection
-					var newOrdersResponse = new OpenCartOrdersResponse();//this._webRequestServices.GetResponse< OpenCartOrdersResponse >( OpenCartCommand.GetOrders, newOrdersEndpoint ) ?? new OpenCartOrdersResponse();
-					var modifiedOrdersResponse = this._webRequestServices.GetResponse< OpenCartOrdersResponse >( OpenCartCommand.GetOrders, modifiedOrdersEndpoint ) ?? new OpenCartOrdersResponse();
-					newOrders.AddRange( newOrdersResponse.Orders );
-					modifiedOrders.AddRange( modifiedOrdersResponse.Orders );
-				} );
-
+				modifiedOrders.AddRange( modifiedOrdersResponse.Orders );
 				currentStartDate = currentEndDate;
 			}
 
-			foreach( var newOrder in newOrders )
-			{
-				if( modifiedOrders.All( x => x.OrderId != newOrder.OrderId ) )
-					modifiedOrders.Add( newOrder );
-			}
 			return modifiedOrders;
 		}
 
-		public async Task< IEnumerable< OpenCartOrder > > GetOrdersAsync( DateTime dateFrom, DateTime dateTo )
+		public async Task< IEnumerable< OpenCartOrder > > GetOrdersAsync( DateTime dateFrom, DateTime dateTo, Mark mark = null )
 		{
-			var newOrders = new List< OpenCartOrder >();
+			mark = mark.CreateNewIfBlank();
 			var modifiedOrders = new List< OpenCartOrder >();
 
 			var dateTimeOffset = await this.GetDateTimeOffsetAsync();
@@ -73,57 +62,36 @@ namespace OpenCartAccess
 			var currentStartDate = dateFrom;
 			while( currentStartDate < dateTo )
 			{
-				var currentEndDate = currentStartDate.AddDays( 1 );
+				var currentEndDate = currentStartDate.AddHours( 4 );
 				if( currentEndDate > dateTo )
 					currentEndDate = dateTo;
 
-				var newOrdersEndpoint = ParamsBuilder.CreateNewOrdersParams( currentStartDate, currentEndDate );
+				//var newOrdersEndpoint = ParamsBuilder.CreateNewOrdersParams( currentStartDate, currentEndDate );
+
 				var modifiedOrdersEndpoint = ParamsBuilder.CreateModifiedOrdersParams( currentStartDate, currentEndDate );
-
-				await ActionPolicies.OpenCartGetPolicyAsync.Do( async () =>
-				{
-					// TODO: Remove code for getting new orders if all are ok. New orders should be included into modified collection
-					var newOrdersResponse = Task.FromResult( new OpenCartOrdersResponse() );// this._webRequestServices.GetResponseAsync< OpenCartOrdersResponse >( OpenCartCommand.GetOrders, newOrdersEndpoint );
-					var modifiedOrdersResponse = this._webRequestServices.GetResponseAsync< OpenCartOrdersResponse >( OpenCartCommand.GetOrders, modifiedOrdersEndpoint );
-					await TaskHelper.WhenAll( newOrdersResponse, modifiedOrdersResponse );
-
-					if( newOrdersResponse.Result != null )
-						newOrders.AddRange( newOrdersResponse.Result.Orders );
-					if( modifiedOrdersResponse.Result != null )
-						modifiedOrders.AddRange( modifiedOrdersResponse.Result.Orders );
-				} );
-
+				var modifiedOrdersResponse = await ActionPolicies.GetPolicyAsync( mark ).Get( async () =>
+						await this._webRequestServices.GetResponseAsync< OpenCartOrdersResponse >( OpenCartCommand.GetOrders, modifiedOrdersEndpoint, mark ) );
+				modifiedOrders.AddRange( modifiedOrdersResponse.Orders );
 				currentStartDate = currentEndDate;
 			}
 
-			foreach( var newOrder in newOrders )
-			{
-				if( modifiedOrders.All( x => x.OrderId != newOrder.OrderId ) )
-					modifiedOrders.Add( newOrder );
-			}
 			return modifiedOrders;
 		}
 
-		public OpenCartDateTimeUtcOffset GetDateTimeOffset()
+		public OpenCartDateTimeUtcOffset GetDateTimeOffset( Mark mark = null )
 		{
-			OpenCartDateTimeUtcOffset offset = null;
-			ActionPolicies.OpenCartGetPolicy.Do( () =>
-			{
-				var response = this._webRequestServices.GetResponse< OpenCartDateTimeUtcOffsetResponse >( OpenCartCommand.GetUtcOffset, ParamsBuilder.EmptyParams ) ?? new OpenCartDateTimeUtcOffsetResponse();
-				offset = response.Offset;
-			} );
-			return offset;
+			mark = mark.CreateNewIfBlank();
+			var response = ActionPolicies.GetPolicy( mark ).Get( () =>
+					this._webRequestServices.GetResponse< OpenCartDateTimeUtcOffsetResponse >( OpenCartCommand.GetUtcOffset, ParamsBuilder.EmptyParams, mark ) );
+			return response.Offset;
 		}
 
-		public async Task< OpenCartDateTimeUtcOffset > GetDateTimeOffsetAsync()
+		public async Task< OpenCartDateTimeUtcOffset > GetDateTimeOffsetAsync( Mark mark = null )
 		{
-			OpenCartDateTimeUtcOffset offset = null;
-			await ActionPolicies.OpenCartGetPolicyAsync.Do( async () =>
-			{
-				var response = ( await this._webRequestServices.GetResponseAsync< OpenCartDateTimeUtcOffsetResponse >( OpenCartCommand.GetUtcOffset, ParamsBuilder.EmptyParams ) ) ?? new OpenCartDateTimeUtcOffsetResponse();
-				offset = response.Offset;
-			} );
-			return offset;
+			mark = mark.CreateNewIfBlank();
+			var response = await ActionPolicies.GetPolicyAsync( mark ).Get( async () =>
+					await this._webRequestServices.GetResponseAsync< OpenCartDateTimeUtcOffsetResponse >( OpenCartCommand.GetUtcOffset, ParamsBuilder.EmptyParams, mark ) );
+			return response.Offset;
 		}
 
 		private DateTime ApplyDateTimeOffset( DateTime baseDateTime, OpenCartDateTimeUtcOffset offset )

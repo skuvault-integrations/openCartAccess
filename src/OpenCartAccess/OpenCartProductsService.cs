@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CuttingEdge.Conditions;
 using OpenCartAccess.Misc;
+using OpenCartAccess.Models;
 using OpenCartAccess.Models.Configuration;
 using OpenCartAccess.Models.Product;
 using OpenCartAccess.Services;
@@ -11,7 +12,7 @@ using ServiceStack;
 
 namespace OpenCartAccess
 {
-	public class OpenCartProductsService : IOpenCartProductsService
+	public class OpenCartProductsService: IOpenCartProductsService
 	{
 		private readonly WebRequestServices _webRequestServices;
 
@@ -23,41 +24,38 @@ namespace OpenCartAccess
 		}
 
 		#region Get
-		public IEnumerable< OpenCartProduct > GetProducts()
+		public IEnumerable< OpenCartProduct > GetProducts( Mark mark = null )
 		{
-			var productsResponse = new OpenCartProductsResponse();
-			ActionPolicies.OpenCartGetPolicy.Do( () =>
-			{
-				productsResponse = this._webRequestServices.GetResponse< OpenCartProductsResponse >( OpenCartCommand.GetProducts, ParamsBuilder.EmptyParams ) ?? new OpenCartProductsResponse();
-			} );
+			mark = mark.CreateNewIfBlank();
+			var productsResponse = ActionPolicies.GetPolicy( mark ).Get(
+				() => this._webRequestServices.GetResponse< OpenCartProductsResponse >( OpenCartCommand.GetProducts, ParamsBuilder.EmptyParams, mark ) );
 			return productsResponse.Products;
 		}
 
-		public async Task< IEnumerable< OpenCartProduct > > GetProductsAsync()
+		public async Task< IEnumerable< OpenCartProduct > > GetProductsAsync( Mark mark = null )
 		{
-			var productsResponse = new OpenCartProductsResponse();
-			await ActionPolicies.OpenCartGetPolicyAsync.Do( async () =>
-			{
-				productsResponse = await this._webRequestServices.GetResponseAsync< OpenCartProductsResponse >( OpenCartCommand.GetProducts, ParamsBuilder.EmptyParams ) ?? new OpenCartProductsResponse();
-			} );
+			mark = mark.CreateNewIfBlank();
+			var productsResponse = await ActionPolicies.GetPolicyAsync( mark ).Get( async () =>
+					await this._webRequestServices.GetResponseAsync< OpenCartProductsResponse >( OpenCartCommand.GetProducts, ParamsBuilder.EmptyParams, mark ) );
 			return productsResponse.Products;
 		}
 		#endregion
 
 		#region Update
-		public void UpdateProducts( IEnumerable< OpenCartProduct > products )
+		public void UpdateProducts( IEnumerable< OpenCartProduct > products, Mark mark = null )
 		{
+			mark = mark.CreateNewIfBlank();
 			var jsonContent = this.ConvertProductsToJson( products );
-			ActionPolicies.OpenCartSubmitPolicy.Do( () => this._webRequestServices.PutData( OpenCartCommand.UpdateProducts, ParamsBuilder.EmptyParams, jsonContent ) );
+			ActionPolicies.SubmitPolicy( mark ).Get(
+				() => this._webRequestServices.PutData< OpenCartProductsResponse >( OpenCartCommand.UpdateProducts, ParamsBuilder.EmptyParams, jsonContent, mark ) );
 		}
 
-		public async Task UpdateProductsAsync( IEnumerable< OpenCartProduct > products )
+		public async Task UpdateProductsAsync( IEnumerable< OpenCartProduct > products, Mark mark = null )
 		{
+			mark = mark.CreateNewIfBlank();
 			var jsonContent = this.ConvertProductsToJson( products );
-			await ActionPolicies.OpenCartSubmitPolicyAsync.Do( async () =>
-			{
-				await this._webRequestServices.PutDataAsync( OpenCartCommand.UpdateProducts, ParamsBuilder.EmptyParams, jsonContent );
-			} );
+			await ActionPolicies.SubmitPolicyAsync( mark ).Get(
+				async () => await this._webRequestServices.PutDataAsync< OpenCartProductsResponse >( OpenCartCommand.UpdateProducts, ParamsBuilder.EmptyParams, jsonContent, mark ) );
 		}
 		#endregion
 
