@@ -126,6 +126,8 @@ namespace OpenCartAccess.Services
 			using( var reader = new StreamReader( stream ) )
 			{
 				var jsonResponse = reader.ReadToEnd();
+				if( jsonResponse.Contains( "Invalid secret key" ) )
+					throw new WebException( jsonResponse, WebExceptionStatus.ProtocolError );
 
 				this.LogResponse( httpResponse.Method, response.ResponseUri, jsonResponse, mark );
 
