@@ -21,6 +21,42 @@ namespace OpenCartAccess
 			this._webRequestServices = new WebRequestServices( config );
 		}
 
+		public bool TryGetOrders( DateTime? dateFrom = null, DateTime? dateTo = null, Mark mark = null )
+		{
+			mark = mark.CreateNewIfBlank();
+			dateFrom = dateFrom ?? DateTime.Now.AddHours( -3 );
+			dateTo = dateTo ?? DateTime.Now.AddHours( -2 );
+
+			try
+			{
+				var modifiedOrdersEndpoint = ParamsBuilder.CreateModifiedOrdersParams( dateFrom.Value, dateTo.Value );
+				var modifiedOrdersResponse = this._webRequestServices.GetResponse< OpenCartOrdersResponse >( OpenCartCommand.GetOrders, modifiedOrdersEndpoint, mark );
+				return true;
+			}
+			catch( Exception )
+			{
+				return false;
+			}
+		}
+
+		public async Task< bool > TryGetOrdersAsync( DateTime? dateFrom = null, DateTime? dateTo = null, Mark mark = null )
+		{
+			mark = mark.CreateNewIfBlank();
+			dateFrom = dateFrom ?? DateTime.Now.AddHours( -3 );
+			dateTo = dateTo ?? DateTime.Now.AddHours( -2 );
+
+			try
+			{
+				var modifiedOrdersEndpoint = ParamsBuilder.CreateModifiedOrdersParams( dateFrom.Value, dateTo.Value );
+				var modifiedOrdersResponse = await this._webRequestServices.GetResponseAsync< OpenCartOrdersResponse >( OpenCartCommand.GetOrders, modifiedOrdersEndpoint, mark );
+				return true;
+			}
+			catch( Exception )
+			{
+				return false;
+			}
+		}
+
 		public IEnumerable< OpenCartOrder > GetOrders( DateTime dateFrom, DateTime dateTo, Mark mark = null )
 		{
 			mark = mark.CreateNewIfBlank();

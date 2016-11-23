@@ -30,6 +30,24 @@ namespace OpenCartAccessTests.Orders
 		}
 
 		[ Test ]
+		public void TryGetOrders()
+		{
+			var service = this.OpenCartFactory.CreateOrdersService( this.Config );
+			var orders = service.TryGetOrders( DateTime.UtcNow.AddMinutes( -2 ), DateTime.UtcNow );
+
+			orders.Should().BeTrue();
+		}
+
+		[ Test ]
+		public async Task TryGetOrdersAsync()
+		{
+			var service = this.OpenCartFactory.CreateOrdersService( this.Config );
+			var orders = await service.TryGetOrdersAsync( DateTime.UtcNow.AddMinutes( -2 ), DateTime.UtcNow );
+
+			orders.Should().BeTrue();
+		}
+
+		[ Test ]
 		public void GetOrders()
 		{
 			var service = this.OpenCartFactory.CreateOrdersService( this.Config );

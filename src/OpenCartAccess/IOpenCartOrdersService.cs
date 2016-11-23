@@ -9,6 +9,9 @@ namespace OpenCartAccess
 {
 	public interface IOpenCartOrdersService
 	{
+		bool TryGetOrders( DateTime? dateFrom = null, DateTime? dateTo = null, Mark mark = null );
+		Task< bool > TryGetOrdersAsync( DateTime? dateFrom = null, DateTime? dateTo = null, Mark mark = null );
+
 		IEnumerable< OpenCartOrder > GetOrders( DateTime dateFrom, DateTime dateTo, Mark mark = null );
 		Task< IEnumerable< OpenCartOrder > > GetOrdersAsync( DateTime dateFrom, DateTime dateTo, Mark mark = null );
 

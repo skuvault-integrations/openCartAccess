@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using CuttingEdge.Conditions;
 using OpenCartAccess.Misc;
@@ -20,22 +22,50 @@ namespace OpenCartAccess
 			this._webRequestServices = new WebRequestServices( config );
 		}
 
-		public bool CheckSumPresented( Mark mark = null )
+		public bool TryGetCheckSums( Mark mark = null )
+		{
+			mark = mark.CreateNewIfBlank();
+			try
+			{
+				var checksumsResponse = this._webRequestServices.GetResponse< OpenCartChecksumsResponse >( OpenCartCommand.GetChecksums, ParamsBuilder.EmptyParams, mark );
+				return this.GetCheckResult( checksumsResponse );
+			}
+			catch( Exception )
+			{
+				return false;
+			}
+		}
+
+		public async Task< bool > TryGetCheckSumsAsync( Mark mark = null )
+		{
+			mark = mark.CreateNewIfBlank();
+			try
+			{
+				var checksumsResponse = await this._webRequestServices.GetResponseAsync< OpenCartChecksumsResponse >( OpenCartCommand.GetChecksums, ParamsBuilder.EmptyParams, mark );
+				return this.GetCheckResult( checksumsResponse );
+			}
+			catch( Exception )
+			{
+				return false;
+			}
+		}
+
+		public IEnumerable< OpenCartChecksum > GetCheckSums( Mark mark = null )
 		{
 			mark = mark.CreateNewIfBlank();
 			var checksumsResponse = ActionPolicies.GetPolicy( mark ).Get( () =>
 					this._webRequestServices.GetResponse< OpenCartChecksumsResponse >( OpenCartCommand.GetChecksums, ParamsBuilder.EmptyParams, mark ) );
 
-			return this.GetCheckResult( checksumsResponse ?? new OpenCartChecksumsResponse() );
+			return checksumsResponse.Checksums;
 		}
 
-		public async Task< bool > CheckSumPresentedAsync( Mark mark = null )
+		public async Task< IEnumerable< OpenCartChecksum > > GetCheckSumsAsync( Mark mark = null )
 		{
 			mark = mark.CreateNewIfBlank();
 			var checksumsResponse = await ActionPolicies.GetPolicyAsync( mark ).Get( async () =>
 					await this._webRequestServices.GetResponseAsync< OpenCartChecksumsResponse >( OpenCartCommand.GetChecksums, ParamsBuilder.EmptyParams, mark ) );
 
-			return this.GetCheckResult( checksumsResponse ?? new OpenCartChecksumsResponse() );
+			return checksumsResponse.Checksums;
 		}
 
 		private bool GetCheckResult( OpenCartChecksumsResponse response )

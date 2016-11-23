@@ -31,6 +31,24 @@ namespace OpenCartAccessTests.Products
 		}
 
 		[ Test ]
+		public void TryGetProducts()
+		{
+			var service = this.OpenCartFactory.CreateProductsService( this.Config );
+			var products = service.TryGetProducts();
+
+			products.Should().BeTrue();
+		}
+
+		[ Test ]
+		public async Task TryGetProductsAsync()
+		{
+			var service = this.OpenCartFactory.CreateProductsService( this.Config );
+			var products = await service.TryGetProductsAsync();
+
+			products.Should().BeTrue();
+		}
+
+		[ Test ]
 		public void GetProducts()
 		{
 			var service = this.OpenCartFactory.CreateProductsService( this.Config );

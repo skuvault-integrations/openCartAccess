@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -24,6 +25,34 @@ namespace OpenCartAccess
 		}
 
 		#region Get
+		public bool TryGetProducts( Mark mark = null )
+		{
+			mark = mark.CreateNewIfBlank();
+			try
+			{
+				var productsResponse = this._webRequestServices.GetResponse< OpenCartProductsResponse >( OpenCartCommand.GetProducts, ParamsBuilder.EmptyParams, mark );
+				return true;
+			}
+			catch( Exception )
+			{
+				return false;
+			}
+		}
+
+		public async Task< bool > TryGetProductsAsync( Mark mark = null )
+		{
+			mark = mark.CreateNewIfBlank();
+			try
+			{
+				var productsResponse = await this._webRequestServices.GetResponseAsync< OpenCartProductsResponse >( OpenCartCommand.GetProducts, ParamsBuilder.EmptyParams, mark );
+				return true;
+			}
+			catch( Exception )
+			{
+				return false;
+			}
+		}
+
 		public IEnumerable< OpenCartProduct > GetProducts( Mark mark = null )
 		{
 			mark = mark.CreateNewIfBlank();

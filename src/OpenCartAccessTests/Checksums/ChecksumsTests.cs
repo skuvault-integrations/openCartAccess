@@ -28,23 +28,40 @@ namespace OpenCartAccessTests.Checksums
 				this.Config = new OpenCartConfig( testConfig.ApiKey, testConfig.ShopUrl );
 		}
 
-
 		[ Test ]
-		public void GetChecksums()
+		public void TryGetCheckSums()
 		{
 			var service = this.OpenCartFactory.CreateChecksumService( this.Config );
-			var checkResult = service.CheckSumPresented();
+			var checkResult = service.TryGetCheckSums();
 
 			checkResult.ShouldBeEquivalentTo( true );
 		}
 
 		[ Test ]
-		public async Task GetChecksumsAsync()
+		public async Task TryGetCheckSumsAsync()
 		{
 			var service = this.OpenCartFactory.CreateChecksumService( this.Config );
-			var checkResult = await service.CheckSumPresentedAsync();
+			var checkResult = await service.TryGetCheckSumsAsync();
 
 			checkResult.ShouldBeEquivalentTo( true );
+		}
+
+		[ Test ]
+		public void GetCheckSums()
+		{
+			var service = this.OpenCartFactory.CreateChecksumService( this.Config );
+			var checkResult = service.GetCheckSums();
+
+			checkResult.Count().Should().BeGreaterThan( 0 );
+		}
+
+		[ Test ]
+		public async Task GetCheckSumsAsync()
+		{
+			var service = this.OpenCartFactory.CreateChecksumService( this.Config );
+			var checkResult = await service.GetCheckSumsAsync();
+
+			checkResult.Count().Should().BeGreaterThan( 0 );
 		}
 	}
 }
