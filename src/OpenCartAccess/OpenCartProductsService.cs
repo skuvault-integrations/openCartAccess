@@ -58,7 +58,7 @@ namespace OpenCartAccess
 			mark = mark.CreateNewIfBlank();
 			var productsResponse = ActionPolicies.GetPolicy( mark ).Get(
 				() => this._webRequestServices.GetResponse< OpenCartProductsResponse >( OpenCartCommand.GetProducts, ParamsBuilder.EmptyParams, mark ) );
-			return productsResponse.Products;
+			return productsResponse.Products.Where( p => p != null );
 		}
 
 		public async Task< IEnumerable< OpenCartProduct > > GetProductsAsync( Mark mark = null )
@@ -66,7 +66,7 @@ namespace OpenCartAccess
 			mark = mark.CreateNewIfBlank();
 			var productsResponse = await ActionPolicies.GetPolicyAsync( mark ).Get( async () =>
 					await this._webRequestServices.GetResponseAsync< OpenCartProductsResponse >( OpenCartCommand.GetProducts, ParamsBuilder.EmptyParams, mark ) );
-			return productsResponse.Products;
+			return productsResponse.Products.Where( p => p != null );
 		}
 		#endregion
 
