@@ -131,6 +131,9 @@ namespace OpenCartAccess.Services
 
 				this.LogResponse( httpResponse.Method, response.ResponseUri, jsonResponse, mark );
 
+				if( jsonResponse.Contains( "},[],{" ) )
+					jsonResponse = jsonResponse.Replace( "},[],{", "},{" );
+
 				var result = !string.IsNullOrEmpty( jsonResponse ) ? jsonResponse.FromJson< T >() : new T();
 				return result;
 			}
