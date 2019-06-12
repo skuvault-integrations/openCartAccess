@@ -83,6 +83,7 @@ namespace OpenCartAccess
 				currentStartDate = currentEndDate;
 			}
 
+			ConvertOrdersTimeToUtc( modifiedOrders, dateTimeOffset );
 			return modifiedOrders;
 		}
 
@@ -111,6 +112,7 @@ namespace OpenCartAccess
 				currentStartDate = currentEndDate;
 			}
 
+			ConvertOrdersTimeToUtc( modifiedOrders, dateTimeOffset );
 			return modifiedOrders;
 		}
 
@@ -134,5 +136,15 @@ namespace OpenCartAccess
 		{
 			return baseDateTime.AddSeconds( offset.Offset );
 		}
+
+		private static void ConvertOrdersTimeToUtc( IEnumerable< OpenCartOrder > modifiedOrders, OpenCartDateTimeUtcOffset dateTimeOffset )
+		{
+			foreach( var order in modifiedOrders )
+			{
+				order.CreatedDate = order.CreatedDate.AddSeconds( -1 * dateTimeOffset.Offset );
+				order.UpdatedDate = order.UpdatedDate.AddSeconds( -1 * dateTimeOffset.Offset );
+			}
+		}
+
 	}
 }
