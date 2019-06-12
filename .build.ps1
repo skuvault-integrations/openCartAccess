@@ -22,10 +22,12 @@ $src_dir = "$BuildRoot\src"
 $solution_file = "$src_dir\$($project_name).sln"
 	
 # Use MSBuild.
-use Framework\v4.0.30319 MSBuild
+#use Framework\v4.0.30319 MSBuild
+Set-Alias MSBuild14 (Join-Path -Path (Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\MSBuild\ToolsVersions\14.0").MSBuildToolsPath -ChildPath "MSBuild.exe")
+
 
 task Clean { 
-	exec { MSBuild "$solution_file" /t:Clean /p:Configuration=Release /p:Platform="Any CPU" /v:quiet } 
+	exec { MSBuild14 "$solution_file" /t:Clean /p:Configuration=Release /p:Platform="Any CPU" /v:quiet } 
 	Remove-Item -force -recurse $build_dir -ErrorAction SilentlyContinue | Out-Null
 }
 
@@ -36,7 +38,7 @@ task Init Clean, {
 }
 
 task Build {
-	exec { MSBuild "$solution_file" /t:Build /p:Configuration=Release /p:Platform="Any CPU" /v:minimal /p:OutDir="$build_artifacts_dir\" }
+	exec { MSBuild14 "$solution_file" /t:Build /p:Configuration=Release /p:Platform="Any CPU" /v:minimal /p:OutDir="$build_artifacts_dir\" }
 }
 
 task Package  {
@@ -98,12 +100,12 @@ task NuGet Package, Version, {
 	# pack
 	$nuget = "$($src_dir)\.nuget\NuGet"
 	
-	exec { & $nuget pack $build_output_dir\$project_name\$project_name.nuspec -Output $build_dir }
+	exec { & $nuget pack $build_output_dir\$project_name\$project_name.nuspec -OutputDirectory $build_dir }
 	
 	$push_project = Read-Host "Push $($project_name) " $Version " to NuGet? (Y/N)"
 	Write-Host $push_project
 	if( $push_project -eq "y" -or $push_project -eq "Y" )	{
-		Get-ChildItem $build_dir\*.nupkg |% { exec { & $nuget push  $_.FullName }}
+		Get-ChildItem $build_dir\*.nupkg |% { exec { & $nuget push  $_.FullName -Source nuget.org }}
 	}
 }
 
