@@ -49,19 +49,10 @@ namespace OpenCartAccessTests.Products
 		}
 
 		[ Test ]
-		public void GetProducts()
+		public async Task GetProductsAsync()
 		{
 			var service = this.OpenCartFactory.CreateProductsService( this.Config );
-			var products = service.GetProducts();
-
-			products.Count().Should().BeGreaterThan( 0 );
-		}
-
-		[ Test ]
-		public async Task GetProductsASync()
-		{
-			var service = this.OpenCartFactory.CreateProductsService( this.Config );
-			var products = await service.GetProductsAsync();
+			var products = (await service.GetProductsAsync()).ToList();
 
 			products.Count().Should().BeGreaterThan( 0 );
 		}
