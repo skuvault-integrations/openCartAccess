@@ -4,6 +4,7 @@ namespace OpenCartAccess.Services
 {
 	internal class ParamsBuilder
 	{
+		internal const int RequestMaxLimit = 250;
 		public static readonly string EmptyParams = string.Empty;
 
 		public static string CreateNewOrdersParams( DateTime dateFrom, DateTime dateTo )

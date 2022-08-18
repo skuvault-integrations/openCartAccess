@@ -53,20 +53,24 @@ namespace OpenCartAccess
 			}
 		}
 
-		public IEnumerable< OpenCartProduct > GetProducts( Mark mark = null )
-		{
-			mark = mark.CreateNewIfBlank();
-			var productsResponse = ActionPolicies.GetPolicy( mark ).Get(
-				() => this._webRequestServices.GetResponse< OpenCartProductsResponse >( OpenCartCommand.GetProducts, ParamsBuilder.EmptyParams, mark ) );
-			return productsResponse.Products.Where( p => p != null );
-		}
-
 		public async Task< IEnumerable< OpenCartProduct > > GetProductsAsync( Mark mark = null )
 		{
+			var products = new List< OpenCartProduct >();
 			mark = mark.CreateNewIfBlank();
-			var productsResponse = await ActionPolicies.GetPolicyAsync( mark ).Get( async () =>
-					await this._webRequestServices.GetResponseAsync< OpenCartProductsResponse >( OpenCartCommand.GetProducts, ParamsBuilder.EmptyParams, mark ) );
-			return productsResponse.Products.Where( p => p != null );
+			for( var i = 1; i < int.MaxValue; i++ )
+			{
+				var endpoint = ParamsBuilder.CreateProductsByPageParams( ParamsBuilder.RequestMaxLimit, i );
+				var productsResponse = await ActionPolicies.GetPolicyAsync( mark ).Get( async () =>
+					await this._webRequestServices.GetResponseAsync< OpenCartProductsResponse >( OpenCartCommand.GetProducts, endpoint, mark ) );
+				if( productsResponse.Products == null )
+					break;
+
+				products.AddRange( productsResponse.Products.Where( p => p != null ) );
+				if( productsResponse.Products.Count < ParamsBuilder.RequestMaxLimit )
+					break;
+			}
+
+			return products;
 		}
 		#endregion
 
