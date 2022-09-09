@@ -16,12 +16,14 @@ namespace OpenCartAccess
 	public class OpenCartProductsService: IOpenCartProductsService
 	{
 		private readonly WebRequestServices _webRequestServices;
+		private readonly string _shopUrl;
 
 		public OpenCartProductsService( OpenCartConfig config )
 		{
 			Condition.Requires( config, "config" ).IsNotNull();
 
 			this._webRequestServices = new WebRequestServices( config );
+			this._shopUrl = config.ShopUrl;
 		}
 
 		#region Get
@@ -55,7 +57,7 @@ namespace OpenCartAccess
 
 		public async Task< IEnumerable< OpenCartProduct > > GetProductsAsync( Mark mark = null )
 		{
-			var products = new List< OpenCartProduct >();
+			var products = new HashSet< OpenCartProduct >();
 			mark = mark.CreateNewIfBlank();
 			for( var i = 1; i < int.MaxValue; i++ )
 			{
@@ -65,11 +67,14 @@ namespace OpenCartAccess
 				if( productsResponse.Products == null || !productsResponse.Products.Any() )
 					break;
 
-				var newProductsResponse = productsResponse.Products.Where( p => p != null ).ToList();
-				if ( !this.DoesExistUniqueItems( products, newProductsResponse ) )
+				var newProductsResponse = productsResponse.Products.Where( p => p != null ).ToHashSet();
+				if ( !this.AreNewProductsReceived( products, newProductsResponse ) )
+				{
+					OpenCartLogger.Warning( mark, "[OpenCart] Shop {0} has problems with pagination. Probably shop has customization which do not follow latest API logic", this._shopUrl );
 					break;
+				}
 				
-				products.AddRange( newProductsResponse );
+				products.UnionWith( newProductsResponse );
 				if( productsResponse.Products.Count < ParamsBuilder.RequestMaxLimit )
 					break;
 			}
@@ -103,8 +108,8 @@ namespace OpenCartAccess
 			return productsToUpdate.ToJson();
 		}
 
-		private bool DoesExistUniqueItems( List< OpenCartProduct > existProducts, List< OpenCartProduct > newProducts ) => 
-			newProducts.Except( existProducts ).Any();
+		private bool AreNewProductsReceived( HashSet< OpenCartProduct > existingProducts, HashSet< OpenCartProduct > receivedProducts ) => 
+			!existingProducts.IsSupersetOf( receivedProducts );
 		#endregion
 	}
 }
