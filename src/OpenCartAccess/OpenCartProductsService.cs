@@ -62,10 +62,14 @@ namespace OpenCartAccess
 				var endpoint = ParamsBuilder.CreateProductsByPageParams( ParamsBuilder.RequestMaxLimit, i );
 				var productsResponse = await ActionPolicies.GetPolicyAsync( mark ).Get( async () =>
 					await this._webRequestServices.GetResponseAsync< OpenCartProductsResponse >( OpenCartCommand.GetProducts, endpoint, mark ) );
-				if( productsResponse.Products == null )
+				if( productsResponse.Products == null || !productsResponse.Products.Any() )
 					break;
 
-				products.AddRange( productsResponse.Products.Where( p => p != null ) );
+				var newProductsResponse = productsResponse.Products.Where( p => p != null ).ToList();
+				if ( !this.DoesExistUniqueItems( products, newProductsResponse ) )
+					break;
+				
+				products.AddRange( newProductsResponse );
 				if( productsResponse.Products.Count < ParamsBuilder.RequestMaxLimit )
 					break;
 			}
@@ -98,6 +102,9 @@ namespace OpenCartAccess
 			var productsToUpdate = products.Select( p => new { product_id = p.Id.ToString( CultureInfo.InvariantCulture ), quantity = p.Quantity.ToString( CultureInfo.InvariantCulture ) } ).ToArray();
 			return productsToUpdate.ToJson();
 		}
+
+		private bool DoesExistUniqueItems( List< OpenCartProduct > existProducts, List< OpenCartProduct > newProducts ) => 
+			newProducts.Except( existProducts ).Any();
 		#endregion
 	}
 }
