@@ -185,12 +185,7 @@ namespace OpenCartAccessTests.UnitTests
 		private IList< OpenCartProduct > MockGetProductsByPages( int productsCount )
 		{
 			var products = this.GenerateOpenCartProducts( productsCount );
-			var pageNumber = Math.Ceiling( ( decimal )products.Count / ParamsBuilder.RequestMaxLimit );
-            
-			// if count of products can be get integer number of pages then we should make additional request because we should ask data while count of products
-			// more or equals page size
-			if( products.Count % ParamsBuilder.RequestMaxLimit == 0 )
-				pageNumber++;
+			var pageNumber = products.Count / ParamsBuilder.RequestMaxLimit + 1;
 
 			for( var i = 1; i <= pageNumber; i++ )
 				this._webRequestServiceMock.GetResponseAsync< OpenCartProductsResponse >(
