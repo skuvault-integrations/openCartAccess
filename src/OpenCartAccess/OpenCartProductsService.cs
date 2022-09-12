@@ -67,10 +67,11 @@ namespace OpenCartAccess
 				if( productsResponse.Products == null || !productsResponse.Products.Any() )
 					break;
 
-				// If paging for OpenCart is working then size of page can be more then limit from request
-				// so we can't think that if page is more then PageSize then paging isn't working.
-				// So we should to check that new page return unique products.
-				// If we don't get unique new products then we stop our cycle.
+				// OpenCart sites can support paging, or not, or support it in a strange manner disrespecting page size limit, based on the client site version/implementation.
+				// When OpenCart endpoint supports paging, somehow the size of returned page can be more than specified in the request. Ideally, we could've check
+				// if returned items count in more than specified page size - then paging is not supported. But because of this we cannot apply such a logic.
+				// So checking if next page returns new products compared to the previous one. In some cases it will result in one redundant request, but not sure how to guarantee
+				// we get all the products otherwise.
 				var newProductsResponse = productsResponse.Products.Where( p => p != null ).ToHashSet();
 				if ( !this.AreNewProductsReceived( products, newProductsResponse ) )
 				{
