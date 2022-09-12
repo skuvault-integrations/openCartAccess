@@ -33,8 +33,7 @@ namespace OpenCartAccessTests.UnitTests
 		public async Task GetProductsAsync_AllProductsAreReturned_andOneRequestIsSent_WhenPagingIsWorking_AndProductsCountIsLessThanPageSize()
 		{
 			// Arrange
-			var mockProducts = this.GenerateOpenCartProducts( ParamsBuilder.RequestMaxLimit - 1 );
-			this.MockGetProductsByPages( mockProducts );
+			var mockProducts = this.MockGetProductsByPages( ParamsBuilder.RequestMaxLimit - 1 );
 
 			// Act
 			var products = await this._openCartProductsService.GetProductsAsync();
@@ -53,8 +52,7 @@ namespace OpenCartAccessTests.UnitTests
 		public async Task GetProductsAsync_AllProductsAreReturned_andTwoRequestsAreSent_WhenPagingIsWorking_AndProductCountEqualsPageSize()
 		{
 			// Arrange
-			var mockProducts = this.GenerateOpenCartProducts( ParamsBuilder.RequestMaxLimit );
-			this.MockGetProductsByPages( mockProducts );
+			var mockProducts = this.MockGetProductsByPages( ParamsBuilder.RequestMaxLimit );
 
 			// Act
 			var products = await this._openCartProductsService.GetProductsAsync();
@@ -80,8 +78,7 @@ namespace OpenCartAccessTests.UnitTests
 		public async Task GetProductsAsync_AllProductsAreReturned_andTwoRequestAreSent_WhenPagingIsWorking_AndProductsCountIsMoreThanPageSize()
 		{
 			// Arrange
-			var mockProducts = this.GenerateOpenCartProducts( ParamsBuilder.RequestMaxLimit + 1 );
-			this.MockGetProductsByPages( mockProducts );
+			var mockProducts = this.MockGetProductsByPages( ParamsBuilder.RequestMaxLimit + 1 );
 
 			// Act
 			var products = await this._openCartProductsService.GetProductsAsync();
@@ -107,8 +104,7 @@ namespace OpenCartAccessTests.UnitTests
 		public async Task GetProductsAsync_AllProductsAreReturned_andOneRequestIsSent_WhenPagingIsNotWorking_AndProductsCountIsLessThanPageSize()
 		{
 			// Arrange
-			var mockProducts = this.GenerateOpenCartProducts( ParamsBuilder.RequestMaxLimit - 1 );
-			this.MockGetProductsNoPaging( mockProducts );
+			var mockProducts = this.MockGetProductsNoPaging( ParamsBuilder.RequestMaxLimit - 1 );
 
 			// Act
 			var products = await this._openCartProductsService.GetProductsAsync();
@@ -127,8 +123,7 @@ namespace OpenCartAccessTests.UnitTests
 		public async Task GetProductsAsync_AllProductsAreReturned_andTwoRequestsAreSent_WhenPagingIsNotWorking_AndProductsCountEqualsPageSize()
 		{
 			// Arrange
-			var mockProducts = this.GenerateOpenCartProducts( ParamsBuilder.RequestMaxLimit );
-			this.MockGetProductsNoPaging( mockProducts );
+			var mockProducts = this.MockGetProductsNoPaging( ParamsBuilder.RequestMaxLimit );
 
 			// Act
 			var products = await this._openCartProductsService.GetProductsAsync();
@@ -154,8 +149,7 @@ namespace OpenCartAccessTests.UnitTests
 		public async Task GetProductsAsync_AllProductsAreReturned_andTwoRequestAreSent_WhenPagingIsNotWorking_AndProductsCountIsMoreThanPageSize()
 		{
 			// Arrange
-			var mockProducts = this.GenerateOpenCartProducts( ParamsBuilder.RequestMaxLimit + 1 );
-			this.MockGetProductsNoPaging( mockProducts );
+			var mockProducts = this.MockGetProductsNoPaging( ParamsBuilder.RequestMaxLimit + 1 );
 
 			// Act
 			var products = await this._openCartProductsService.GetProductsAsync();
@@ -177,33 +171,38 @@ namespace OpenCartAccessTests.UnitTests
 					Arg.Any< Mark >() );
 		}
 
-		private void MockGetProductsNoPaging( IList< OpenCartProduct > mockProducts )
+		private IList< OpenCartProduct > MockGetProductsNoPaging( int productsCount )
 		{
+			var products = this.GenerateOpenCartProducts( productsCount );
 			this._webRequestServiceMock.GetResponseAsync< OpenCartProductsResponse >(
 					OpenCartCommand.GetProducts,
 					Arg.Any< string >(),
 					Arg.Any< Mark >() )
-				.Returns( new OpenCartProductsResponse { Products = mockProducts } );
+				.Returns( new OpenCartProductsResponse { Products = products } );
+			return products;
 		}
 
-		private void MockGetProductsByPages( IList< OpenCartProduct > mockProducts )
+		private IList< OpenCartProduct > MockGetProductsByPages( int productsCount )
 		{
-			var numberOfPages = Math.Ceiling( ( decimal )mockProducts.Count / ParamsBuilder.RequestMaxLimit );
-			
+			var products = this.GenerateOpenCartProducts( productsCount );
+			var pageNumber = Math.Ceiling( ( decimal )products.Count / ParamsBuilder.RequestMaxLimit );
+            
 			// if count of products can be get integer number of pages then we should make additional request because we should ask data while count of products
 			// more or equals page size
-			if( numberOfPages == Math.Round( ( decimal )mockProducts.Count / ParamsBuilder.RequestMaxLimit ) )
-				numberOfPages++;
-			
-			for( var i = 1; i <= numberOfPages; i++ )
+			if( products.Count % ParamsBuilder.RequestMaxLimit == 0 )
+				pageNumber++;
+
+			for( var i = 1; i <= pageNumber; i++ )
 				this._webRequestServiceMock.GetResponseAsync< OpenCartProductsResponse >(
 						OpenCartCommand.GetProducts,
 						$"limit/{ParamsBuilder.RequestMaxLimit}/page/{i}",
 						Arg.Any< Mark >() )
 					.Returns( new OpenCartProductsResponse
 					{
-						Products = mockProducts.Skip( ( i - 1 ) * ParamsBuilder.RequestMaxLimit ).Take( ParamsBuilder.RequestMaxLimit ).ToList()
+						Products = products.Skip( ( i - 1 ) * ParamsBuilder.RequestMaxLimit ).Take( ParamsBuilder.RequestMaxLimit ).ToList()
 					} );
+			
+			return products;
 		}
 		
 		private List< OpenCartProduct > GenerateOpenCartProducts( int count )
