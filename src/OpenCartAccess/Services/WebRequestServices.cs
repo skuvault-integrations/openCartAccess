@@ -9,6 +9,7 @@ using OpenCartAccess.Models;
 using OpenCartAccess.Models.Configuration;
 using ServiceStack;
 
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")] 
 [assembly: InternalsVisibleTo("OpenCartAccessTests")]
 
 namespace OpenCartAccess.Services
