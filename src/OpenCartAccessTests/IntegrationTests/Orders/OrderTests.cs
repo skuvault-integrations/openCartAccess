@@ -8,7 +8,7 @@ using NUnit.Framework;
 using OpenCartAccess;
 using OpenCartAccess.Models.Configuration;
 
-namespace OpenCartAccessTests.Orders
+namespace OpenCartAccessTests.IntegrationTests.Orders
 {
 	[ TestFixture ]
 	internal class OrderTests

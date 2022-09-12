@@ -7,7 +7,7 @@ using NUnit.Framework;
 using OpenCartAccess;
 using OpenCartAccess.Models.Configuration;
 
-namespace OpenCartAccessTests.Checksums
+namespace OpenCartAccessTests.IntegrationTests.Checksums
 {
 	[ TestFixture ]
 	internal class ChecksumsTests

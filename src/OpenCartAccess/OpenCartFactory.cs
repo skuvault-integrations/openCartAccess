@@ -1,4 +1,5 @@
 ﻿using OpenCartAccess.Models.Configuration;
+using OpenCartAccess.Services;
 
 namespace OpenCartAccess
 {
@@ -14,17 +15,17 @@ namespace OpenCartAccess
 	{
 		public IOpenCartOrdersService CreateOrdersService( OpenCartConfig config )
 		{
-			return new OpenCartOrdersService( config );
+			return new OpenCartOrdersService( config, new WebRequestServices( config ) );
 		}
 
 		public IOpenCartProductsService CreateProductsService( OpenCartConfig config )
 		{
-			return new OpenCartProductsService( config );
+			return new OpenCartProductsService( config, new WebRequestServices( config ) );
 		}
 
 		public IOpenCartChecksumService CreateChecksumService( OpenCartConfig config )
 		{
-			return new OpenCartChecksumService( config );
+			return new OpenCartChecksumService( config, new WebRequestServices( config ) );
 		}
 	}
 }

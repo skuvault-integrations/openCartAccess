@@ -12,13 +12,13 @@ namespace OpenCartAccess
 {
 	public class OpenCartOrdersService: IOpenCartOrdersService
 	{
-		private readonly WebRequestServices _webRequestServices;
+		private readonly IWebRequestServices _webRequestServices;
 
-		public OpenCartOrdersService( OpenCartConfig config )
+		internal OpenCartOrdersService( OpenCartConfig config, IWebRequestServices webRequestServices )
 		{
 			Condition.Requires( config, "config" ).IsNotNull();
 
-			this._webRequestServices = new WebRequestServices( config );
+			this._webRequestServices = webRequestServices;
 		}
 
 		public bool TryGetOrders( DateTime? dateFrom = null, DateTime? dateTo = null, Mark mark = null )

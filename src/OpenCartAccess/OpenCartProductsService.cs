@@ -15,14 +15,14 @@ namespace OpenCartAccess
 {
 	public class OpenCartProductsService: IOpenCartProductsService
 	{
-		private readonly WebRequestServices _webRequestServices;
+		private readonly IWebRequestServices _webRequestServices;
 		private readonly string _shopUrl;
 
-		public OpenCartProductsService( OpenCartConfig config )
+		internal OpenCartProductsService( OpenCartConfig config, IWebRequestServices webRequestServices )
 		{
 			Condition.Requires( config, "config" ).IsNotNull();
 
-			this._webRequestServices = new WebRequestServices( config );
+			this._webRequestServices = webRequestServices;
 			this._shopUrl = config.ShopUrl;
 		}
 
@@ -67,6 +67,10 @@ namespace OpenCartAccess
 				if( productsResponse.Products == null || !productsResponse.Products.Any() )
 					break;
 
+				// If paging for OpenCart is working then size of page can be more then limit from request
+				// so we can't think that if page is more then PageSize then paging isn't working.
+				// So we should to check that new page return unique products.
+				// If we don't get unique new products then we stop our cycle.
 				var newProductsResponse = productsResponse.Products.Where( p => p != null ).ToHashSet();
 				if ( !this.AreNewProductsReceived( products, newProductsResponse ) )
 				{
