@@ -75,7 +75,7 @@ namespace OpenCartAccess
 				var newProductsResponse = productsResponse.Products.Where( p => p != null ).ToHashSet();
 				if ( !this.AreNewProductsReceived( products, newProductsResponse ) )
 				{
-					OpenCartLogger.Warning( mark, "[OpenCart] Shop {0} has problems with pagination. Probably shop has customization which do not follow latest API logic", this._shopUrl );
+					OpenCartLogger.Warning( "[{Mark}]\t[OpenCart] Shop {ShopUrl} has problems with pagination. Probably shop has customization which do not follow latest API logic", mark, this._shopUrl );
 					break;
 				}
 				
