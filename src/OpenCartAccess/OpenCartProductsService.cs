@@ -16,12 +16,14 @@ namespace OpenCartAccess
 	public class OpenCartProductsService: IOpenCartProductsService
 	{
 		private readonly WebRequestServices _webRequestServices;
+		private readonly string _shopUrl;
 
 		public OpenCartProductsService( OpenCartConfig config )
 		{
 			Condition.Requires( config, "config" ).IsNotNull();
 
 			this._webRequestServices = new WebRequestServices( config );
+			this._shopUrl = config.ShopUrl;
 		}
 
 		#region Get
@@ -55,17 +57,24 @@ namespace OpenCartAccess
 
 		public async Task< IEnumerable< OpenCartProduct > > GetProductsAsync( Mark mark = null )
 		{
-			var products = new List< OpenCartProduct >();
+			var products = new HashSet< OpenCartProduct >();
 			mark = mark.CreateNewIfBlank();
 			for( var i = 1; i < int.MaxValue; i++ )
 			{
 				var endpoint = ParamsBuilder.CreateProductsByPageParams( ParamsBuilder.RequestMaxLimit, i );
 				var productsResponse = await ActionPolicies.GetPolicyAsync( mark ).Get( async () =>
 					await this._webRequestServices.GetResponseAsync< OpenCartProductsResponse >( OpenCartCommand.GetProducts, endpoint, mark ) );
-				if( productsResponse.Products == null )
+				if( productsResponse.Products == null || !productsResponse.Products.Any() )
 					break;
 
-				products.AddRange( productsResponse.Products.Where( p => p != null ) );
+				var newProductsResponse = productsResponse.Products.Where( p => p != null ).ToHashSet();
+				if ( !this.AreNewProductsReceived( products, newProductsResponse ) )
+				{
+					OpenCartLogger.Warning( mark, "[OpenCart] Shop {0} has problems with pagination. Probably shop has customization which do not follow latest API logic", this._shopUrl );
+					break;
+				}
+				
+				products.UnionWith( newProductsResponse );
 				if( productsResponse.Products.Count < ParamsBuilder.RequestMaxLimit )
 					break;
 			}
@@ -98,6 +107,9 @@ namespace OpenCartAccess
 			var productsToUpdate = products.Select( p => new { product_id = p.Id.ToString( CultureInfo.InvariantCulture ), quantity = p.Quantity.ToString( CultureInfo.InvariantCulture ) } ).ToArray();
 			return productsToUpdate.ToJson();
 		}
+
+		private bool AreNewProductsReceived( HashSet< OpenCartProduct > existingProducts, HashSet< OpenCartProduct > receivedProducts ) => 
+			!existingProducts.IsSupersetOf( receivedProducts );
 		#endregion
 	}
 }

@@ -24,5 +24,11 @@ namespace OpenCartAccess.Misc
 			var markStr = string.Format( "[{0}]\t", mark );
 			Log.Trace( ex, markStr + format, args );
 		}
+
+		public static void Warning( Mark mark, string format, params object[] args )
+		{
+			var markStr = $"[{mark}]\t";
+			Log.Warn( markStr + format, args );
+		}
 	}
 }
