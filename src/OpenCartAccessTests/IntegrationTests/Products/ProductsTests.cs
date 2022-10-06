@@ -9,7 +9,7 @@ using OpenCartAccess;
 using OpenCartAccess.Models.Configuration;
 using OpenCartAccess.Models.Product;
 
-namespace OpenCartAccessTests.Products
+namespace OpenCartAccessTests.IntegrationTests.Products
 {
 	[ TestFixture ]
 	internal class ProductsTests

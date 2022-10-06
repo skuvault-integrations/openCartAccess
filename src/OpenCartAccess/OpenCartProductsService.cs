@@ -15,14 +15,14 @@ namespace OpenCartAccess
 {
 	public class OpenCartProductsService: IOpenCartProductsService
 	{
-		private readonly WebRequestServices _webRequestServices;
+		private readonly IWebRequestServices _webRequestServices;
 		private readonly string _shopUrl;
 
-		public OpenCartProductsService( OpenCartConfig config )
+		internal OpenCartProductsService( OpenCartConfig config, IWebRequestServices webRequestServices )
 		{
 			Condition.Requires( config, "config" ).IsNotNull();
 
-			this._webRequestServices = new WebRequestServices( config );
+			this._webRequestServices = webRequestServices;
 			this._shopUrl = config.ShopUrl;
 		}
 
@@ -67,10 +67,15 @@ namespace OpenCartAccess
 				if( productsResponse.Products == null || !productsResponse.Products.Any() )
 					break;
 
+				// OpenCart sites can support paging, or not, or support it in a strange manner disrespecting page size limit, based on the client site version/implementation.
+				// When OpenCart endpoint supports paging, somehow the size of returned page can be more than specified in the request. Ideally, we could've check
+				// if returned items count in more than specified page size - then paging is not supported. But because of this we cannot apply such a logic.
+				// So checking if next page returns new products compared to the previous one. In some cases it will result in one redundant request, but not sure how to guarantee
+				// we get all the products otherwise.
 				var newProductsResponse = productsResponse.Products.Where( p => p != null ).ToHashSet();
 				if ( !this.AreNewProductsReceived( products, newProductsResponse ) )
 				{
-					OpenCartLogger.Warning( mark, "[OpenCart] Shop {0} has problems with pagination. Probably shop has customization which do not follow latest API logic", this._shopUrl );
+					OpenCartLogger.Warning( "[{Mark}]\t[OpenCart] Shop {ShopUrl} has problems with pagination. Probably shop has customization which do not follow latest API logic", mark, this._shopUrl );
 					break;
 				}
 				

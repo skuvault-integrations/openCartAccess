@@ -25,10 +25,9 @@ namespace OpenCartAccess.Misc
 			Log.Trace( ex, markStr + format, args );
 		}
 
-		public static void Warning( Mark mark, string format, params object[] args )
+		public static void Warning( string format, params object[] args )
 		{
-			var markStr = $"[{mark}]\t";
-			Log.Warn( markStr + format, args );
+			Log.Warn( format, args );
 		}
 	}
 }

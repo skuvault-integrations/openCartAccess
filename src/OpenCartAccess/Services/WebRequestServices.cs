@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using CuttingEdge.Conditions;
 using OpenCartAccess.Misc;
@@ -8,9 +9,20 @@ using OpenCartAccess.Models;
 using OpenCartAccess.Models.Configuration;
 using ServiceStack;
 
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")] 
+[assembly: InternalsVisibleTo("OpenCartAccessTests")]
+
 namespace OpenCartAccess.Services
 {
-	internal class WebRequestServices
+	internal interface IWebRequestServices
+	{
+		T GetResponse< T >( OpenCartCommand command, string commandParams, Mark mark ) where T : new();
+		Task< T > GetResponseAsync< T >( OpenCartCommand command, string commandParams, Mark mark ) where T : new();
+		T PutData< T >( OpenCartCommand command, string endpoint, string jsonContent, Mark mark ) where T : new();
+		Task< T > PutDataAsync< T >( OpenCartCommand command, string endpoint, string jsonContent, Mark mark ) where T : new();
+	}
+	
+	internal class WebRequestServices: IWebRequestServices
 	{
 		private readonly OpenCartConfig _config;
 

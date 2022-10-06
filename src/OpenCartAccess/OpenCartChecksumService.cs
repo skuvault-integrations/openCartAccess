@@ -13,13 +13,13 @@ namespace OpenCartAccess
 {
 	public class OpenCartChecksumService: IOpenCartChecksumService
 	{
-		private readonly WebRequestServices _webRequestServices;
+		private readonly IWebRequestServices _webRequestServices;
 
-		public OpenCartChecksumService( OpenCartConfig config )
+		internal OpenCartChecksumService( OpenCartConfig config, IWebRequestServices webRequestServices )
 		{
 			Condition.Requires( config, "config" ).IsNotNull();
 
-			this._webRequestServices = new WebRequestServices( config );
+			this._webRequestServices = webRequestServices;
 		}
 
 		public bool TryGetCheckSums( Mark mark = null )
